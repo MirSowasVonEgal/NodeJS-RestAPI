@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "app": "node app.js",
-    "app-liveupdate": "nodemon app.js"
+    "app-liveupdate": "nodemon app.js",
+    "git push": "git commit -m 'Updated' && git push origin master"
   },
   "author": "",
   "license": "ISC",
