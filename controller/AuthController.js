@@ -7,6 +7,7 @@ router.post('/login', function(req, res) {
         res.json({ error: false, response});
     })
     .catch(function (response) {
+        res.status(400);
         res.json({ error: true, response});
     });
 });
@@ -17,6 +18,7 @@ router.post('/register', function(req, res) {
         res.json({ error: false, response});
     })
     .catch(function (response) {
+        res.status(400);
         res.json({ error: true, response});
     });
 });
@@ -27,6 +29,7 @@ router.get('/profile', function(req, res) {
         res.json({ error: false, response});
     })
     .catch(function (response) {
+        res.status(401);
         res.json({ error: true, response});
     });
 });

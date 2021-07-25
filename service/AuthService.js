@@ -39,12 +39,12 @@ exports.getProfile = function(req) {
     return new Promise(function(resolve, reject) {
         if(!req.headers.authorization) req.headers.authorization = "";
         const token = req.headers.authorization.split(' ');
-        if(!token[1]) token = "";
+        if(!token[1]) token[1] = "";
         Firebase.getProfile(token[1], function(error, result) {
         if (error)
             reject(error);
         else
-            resolve(result);
+            resolve(result[0]);
         });
     });
 }
