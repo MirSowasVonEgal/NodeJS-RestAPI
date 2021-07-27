@@ -10,7 +10,7 @@
     "git pull": "git pull origin master",
     "git status": "git test"
   },
-  "author": "",
+  "author": "Timo",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^10.0.0",
