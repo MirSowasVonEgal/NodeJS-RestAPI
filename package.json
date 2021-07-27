@@ -8,8 +8,7 @@
     "app-liveupdate": "nodemon app.js",
     "git push": "git add . && git commit -m Updated && git push origin master",
     "git pull": "git pull origin master",
-    "echo test": "echo Test",
-    "git status": "git status"
+    "git status": "git test"
   },
   "author": "",
   "license": "ISC",
