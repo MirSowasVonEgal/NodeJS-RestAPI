@@ -16,7 +16,7 @@ app.use((req, res, next) => {
   res.header('Content-Type', 'application/json');
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept,recording-session");
-  res.status(200);
+  res.status(-1);
   next();
 });
 
@@ -24,7 +24,8 @@ app.use((req, res, next) => {
 app.use("/" + basePath, router);
 
 app.get('/', function(req, res) {
-  res.json({online: true, version: package.version, name: package.name});
+  res.status(200);
+  res.json({ online: true, version: package.version, name: package.name, author: package.author });
 });
 
 app.all('*', function(req, res) {

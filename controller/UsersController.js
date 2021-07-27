@@ -1,23 +1,22 @@
-var router = require('express').Router();
-var UsersService = require('../service/UsersService');
+var { router, Response, UsersService } = require('../core');
 
 router.get('/', function(req, res) {
     UsersService.getUsers(req)
     .then(function (response) {
-        res.json({ error: false, response});
+        Response.successfully(response, res);
     })
     .catch(function (response) {
-        res.json({ error: true, response});
+        Response.failed(response, res);
     });
 });
 
 router.get('/:userid', function(req, res) {
     UsersService.getUser(req)
     .then(function (response) {
-        res.json({ error: false, response});
+        Response.successfully(response, res);
     })
     .catch(function (response) {
-        res.json({ error: true, response});
+        Response.failed(response, res);
     });
 });
 

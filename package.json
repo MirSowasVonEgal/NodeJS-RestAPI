@@ -9,13 +9,15 @@
     "git push": "git add . && git commit -m Updated && git push origin master",
     "git pull": "git pull origin master"
   },
-  "author": "Timo",
+  "author": "Timo Otten",
   "license": "ISC",
   "dependencies": {
+    "@vitalets/google-translate-api": "^7.0.0",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "firebase": "^8.8.0",
     "firebase-admin": "^9.11.0",
-    "firebaseauth": "^1.0.0"
+    "firebaseauth": "^1.0.0",
+    "translate-api": "^0.3.18"
   }
 }
