@@ -1,7 +1,7 @@
 require("dotenv").config();
 var { router, Response, AuthService, UsersService } = require('../core');
 
-router.post('/login', function(req, res) {
+router.post('/login', async function(req, res) {
     AuthService.loginUser(req)
     .then(function (response) {
         response.message = "You have successfully logged in";
@@ -12,7 +12,7 @@ router.post('/login', function(req, res) {
     });
 });
 
-router.post('/register', function(req, res) {
+router.post('/register', async function(req, res) {
     AuthService.registerUser(req)
     .then(function (response) {
         response.message = "You have successfully registered";
@@ -23,7 +23,7 @@ router.post('/register', function(req, res) {
     });
 });
 
-router.get('/profile', function(req, res) {
+router.get('/profile', async function(req, res) {
     AuthService.getProfile(req)
     .then(function (response) {
         req.params.userid = response.id;

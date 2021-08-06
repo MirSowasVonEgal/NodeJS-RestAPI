@@ -1,21 +1,13 @@
 require("dotenv").config();
-const FirebaseAuth = require('firebaseauth'); // or import FirebaseAuth from 'firebaseauth';
-const Firebase = new FirebaseAuth(process.env.FIREBASE_API_KEY);
-var admin = require('firebase-admin');  
-
+const mongoose = require('mongoose');
+mongoose.connect(`mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}:${process.env.MONGODB_PORT}/${process.env.MONGODB_DATABASE}`, {useNewUrlParser: true, useUnifiedTopology: true});
 
 exports.getTest = function(req) {
     return new Promise(function(resolve, reject) {
-        var db = admin.firestore();
-        const docRef = db.collection('users').doc('alovelace');
+        const Cat = mongoose.model('Cat', { _id: Number, name: String, settings: Object });
 
-        docRef.set({
-        first: 'Ada',
-        last: 'Lovelace',
-        born: 1815
-        }).then(result => {
-            resolve(result);
-        });
-
+        const kitty = new Cat({ _id: '', name: "Test", settings: { language: 'de' }});
+        kitty.save().then(() => console.log('meow'));
+        resolve("finish");
     });
 }

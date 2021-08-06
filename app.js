@@ -37,6 +37,7 @@ app.get('/', function(req, res) {
 
 app.all('*', function(req, res) {
   res.status(404);
+  
   res.json({ error: true, response: { message: "Error 404. Page not found!"}});
 });
 

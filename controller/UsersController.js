@@ -1,6 +1,6 @@
 var { router, Response, UsersService } = require('../core');
 
-router.get('/', function(req, res) {
+router.get('/', async function(req, res) {
     UsersService.getUsers(req)
     .then(function (response) {
         Response.successfully(response, res);
@@ -10,7 +10,7 @@ router.get('/', function(req, res) {
     });
 });
 
-router.get('/:userid', function(req, res) {
+router.get('/:userid', async function(req, res) {
     UsersService.getUser(req)
     .then(function (response) {
         Response.successfully(response, res);

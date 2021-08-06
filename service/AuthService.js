@@ -30,11 +30,9 @@ exports.registerUser = function(req) {
                 if (error2)
                     reject(error2)
                 else {
-                    admin.auth().setCustomUserClaims(result.user.id, { language: "de", rank: "Customer" }).then(response2 => {
-                        resolve(result)
-                    }).catch(error => {
-                        reject(error)
-                    });
+                    admin.firestore().collection("users").listDocuments(result3 => {
+                        
+                    })
                 }
             });
             }
