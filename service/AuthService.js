@@ -1,6 +1,8 @@
 require("dotenv").config();
 var FirebaseAuth = require('firebaseauth');
 var Firebase = new FirebaseAuth(process.env.FIREBASE_API_KEY);
+var admin = require('firebase-admin');
+
 
 exports.loginUser = function(req) {
     return new Promise(function(resolve, reject) {
@@ -27,8 +29,13 @@ exports.registerUser = function(req) {
             Firebase.sendVerificationEmail(result.token, function(error2, result2) {
                 if (error2)
                     reject(error2)
-                else
-                    resolve(result)
+                else {
+                    admin.auth().setCustomUserClaims(result.user.id, { language: "de", rank: "Customer" }).then(response2 => {
+                        resolve(result)
+                    }).catch(error => {
+                        reject(error)
+                    });
+                }
             });
             }
         });

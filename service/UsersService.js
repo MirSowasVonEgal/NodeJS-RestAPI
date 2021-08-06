@@ -1,15 +1,10 @@
 require("dotenv").config();
 var admin = require('firebase-admin');
 
-admin.initializeApp({
-  credential: admin.credential.cert(process.env.FIREBASE_API_FILE),
-  databaseURL: process.env.FIREBASE_API_DATABASE
-});
-
 exports.getUsers = function(req) {
     return new Promise(function(resolve, reject) {
         admin.auth().listUsers(1000).then((users) => {
-            resolve(users.users);
+          resolve(users.users);
           })
           .catch((error) => {
             reject(error);

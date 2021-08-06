@@ -2,6 +2,7 @@ const package = require('./package.json');
 var express = require('express');
 var app = express();
 var router = require("./router");
+var admin = require('firebase-admin');
 app.use(express.json());
 
 // Config
@@ -9,6 +10,12 @@ require("dotenv").config();
 const host = process.env.APP_HOST;
 const port = process.env.APP_PORT;
 const basePath = process.env.APP_BASEPATH;
+
+// Init Firebase
+admin.initializeApp({
+  credential: admin.credential.cert(process.env.FIREBASE_API_FILE),
+  databaseURL: process.env.FIREBASE_API_DATABASE
+});
 
 // Enable CORS on ExpressJS to avoid cross-origin errors when calling this server using AJAX
 // We are authorizing all domains to be able to manage information via AJAX (this is just for development)

@@ -1,3 +1,4 @@
+require("dotenv").config();
 var { router, Response, AuthService, UsersService } = require('../core');
 
 router.post('/login', function(req, res) {
