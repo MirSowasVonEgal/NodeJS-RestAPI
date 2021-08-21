@@ -1,7 +1,6 @@
 require("dotenv").config();
-var FirebaseAuth = require('firebaseauth');
-var Firebase = new FirebaseAuth(process.env.FIREBASE_API_KEY);
-var admin = require('firebase-admin');
+var { Firebase } = require('../core');
+var User = require('../model/User');
 
 
 exports.loginUser = function(req) {
@@ -23,19 +22,18 @@ exports.registerUser = function(req) {
         if(!req.body.password) req.body.password = "";
         if(!req.body.username) reject({ message: "Invalid or missing field: Username"});
         Firebase.registerWithEmail(req.body.email, req.body.password, { name: req.body.username }, function(error, result) {
-        if (error)
-            reject(error);
-        else {
+        if (!error) {
             Firebase.sendVerificationEmail(result.token, function(error2, result2) {
-                if (error2)
-                    reject(error2)
-                else {
-                    admin.firestore().collection("users").listDocuments(result3 => {
-                        
-                    })
-                }
+                if(!error2) {
+                    new User({ _id: result.user.id, user: result.user, settings: { language: 'de' } }).save()
+                    .then(() => resolve(result)).catch(error => reject(error));
+                } else
+                    reject(error2);
             });
-            }
+        } else {
+            reject(error);
+        }
+        
         });
     });
 }

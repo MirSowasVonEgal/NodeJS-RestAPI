@@ -3,7 +3,10 @@ var express = require('express');
 var app = express();
 var router = require("./router");
 var admin = require('firebase-admin');
+var mongoose = require('mongoose');
 app.use(express.json());
+
+mongoose.connect(`mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}:${process.env.MONGODB_PORT}/${process.env.MONGODB_DATABASE}`, {useNewUrlParser: true, useUnifiedTopology: true});
 
 // Config
 require("dotenv").config();
