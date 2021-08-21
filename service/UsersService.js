@@ -1,5 +1,5 @@
 require("dotenv").config();
-var admin = require('firebase-admin');
+
 
 exports.getUsers = function(req) {
     return new Promise(function(resolve, reject) {

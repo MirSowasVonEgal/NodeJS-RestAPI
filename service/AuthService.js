@@ -1,7 +1,38 @@
 require("dotenv").config();
-var { Firebase } = require('../core');
-var User = require('../model/User');
+var { User, Google } = require('../core');
 
+// OAuth2 from Google
+const oauth2Client = new Google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URL
+);
+
+exports.getGoogleURL = function(req) {
+    return new Promise(function(resolve, reject) {
+        const url = oauth2Client.generateAuthUrl({
+            access_type: 'online',
+            scope: [ 'email', 'profile', 'openid' ],
+        });
+        if(url)
+            resolve({ url: url })
+        else
+            reject()
+    });
+}
+
+exports.getGoogleCallback = function(req) {
+    return new Promise(function(resolve, reject) {
+        const url = oauth2Client.generateAuthUrl({
+            access_type: 'online',
+            scope: [ 'email', 'profile', 'openid' ],
+        });
+        if(url)
+            resolve({ url: url })
+        else
+            reject()
+    });
+}
 
 exports.loginUser = function(req) {
     return new Promise(function(resolve, reject) {
@@ -21,20 +52,7 @@ exports.registerUser = function(req) {
         if(!req.body.email) req.body.email = "";
         if(!req.body.password) req.body.password = "";
         if(!req.body.username) reject({ message: "Invalid or missing field: Username"});
-        Firebase.registerWithEmail(req.body.email, req.body.password, { name: req.body.username }, function(error, result) {
-        if (!error) {
-            Firebase.sendVerificationEmail(result.token, function(error2, result2) {
-                if(!error2) {
-                    new User({ _id: result.user.id, user: result.user, settings: { language: 'de' } }).save()
-                    .then(() => resolve(result)).catch(error => reject(error));
-                } else
-                    reject(error2);
-            });
-        } else {
-            reject(error);
-        }
         
-        });
     });
 }
 

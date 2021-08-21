@@ -2,23 +2,20 @@ const package = require('./package.json');
 var express = require('express');
 var app = express();
 var router = require("./router");
-var admin = require('firebase-admin');
 var mongoose = require('mongoose');
 app.use(express.json());
 
-mongoose.connect(`mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}:${process.env.MONGODB_PORT}/${process.env.MONGODB_DATABASE}`, {useNewUrlParser: true, useUnifiedTopology: true});
+//mongoose.connect(`mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}:${process.env.MONGODB_PORT}/${process.env.MONGODB_DATABASE}`, 
+//{useNewUrlParser: true, useUnifiedTopology: true});
+
+mongoose.connect(`mongodb+srv://admin:G5WY7wZ2U6Z7tifV@cluster0.ihqwe.mongodb.net/RestAPI?retryWrites=true&w=majority`, 
+{useNewUrlParser: true, useUnifiedTopology: true});
 
 // Config
 require("dotenv").config();
 const host = process.env.APP_HOST;
 const port = process.env.APP_PORT;
 const basePath = process.env.APP_BASEPATH;
-
-// Init Firebase
-admin.initializeApp({
-  credential: admin.credential.cert(process.env.FIREBASE_API_FILE),
-  databaseURL: process.env.FIREBASE_API_DATABASE
-});
 
 // Enable CORS on ExpressJS to avoid cross-origin errors when calling this server using AJAX
 // We are authorizing all domains to be able to manage information via AJAX (this is just for development)
