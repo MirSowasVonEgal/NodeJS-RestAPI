@@ -22,14 +22,13 @@ exports.getTest = function(req) {
 
         //resolve(url);
 
-        //const {tokens} = oauth2Client.getToken(req.query.code).then(result => console.log(result)).catch(error => console.log(error));
+        const {tokens} = oauth2Client.getToken(req.query.code).then(
+        ).catch(error => console.log(error));
+        oauth2Client.setCredentials(tokens);
         
-        oauth2Client.setCredentials({
-            access_token: "ya29.a0ARrdaM9EaM4jm491sZxT5aMvTZg2IzmlqUHYxUUMP4PvKJZEYWyrwlEyv4lG2lH3HSlrwxg2fJ1YCY4iKLp7F9iFLiWwc279NKu7pUKbhGSChqVUJIqxM-j_7wpKqdQe1lV2W3PDmkH6l6-EfW5xQ0m4iV0i",
-        });
-
         Google.oauth2("v2").userinfo.get({
             auth: oauth2Client,
         }, (err, data) => (err ? reject(err) : resolve(data)));
+
     });
 }

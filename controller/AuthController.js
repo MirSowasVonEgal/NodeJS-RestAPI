@@ -1,5 +1,5 @@
 require("dotenv").config();
-var { router, Response, AuthService, UsersService } = require('../core');
+var { router, Response, AuthService, Auth } = require('../core');
 
 router.get('/google/url', async function(req, res) {
     AuthService.getGoogleURL(req)
@@ -43,7 +43,7 @@ router.post('/register', async function(req, res) {
     });
 });
 
-router.get('/profile', async function(req, res) {
+router.get('/profile', Auth, async function(req, res) {
     AuthService.getProfile(req)
     .then(function (response) {
         Response.successfully(response, res);

@@ -6,10 +6,10 @@ var mongoose = require('mongoose');
 app.use(express.json());
 
 //mongoose.connect(`mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}:${process.env.MONGODB_PORT}/${process.env.MONGODB_DATABASE}`, 
-//{useNewUrlParser: true, useUnifiedTopology: true});
+//{useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true });
 
 mongoose.connect(`mongodb+srv://admin:G5WY7wZ2U6Z7tifV@cluster0.ihqwe.mongodb.net/RestAPI?retryWrites=true&w=majority`, 
-{useNewUrlParser: true, useUnifiedTopology: true});
+{useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true });
 
 // Config
 require("dotenv").config();
