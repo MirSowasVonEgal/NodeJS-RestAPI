@@ -25,9 +25,18 @@ schema.pre('save', async function(next) {
         var user = this;
         if(user.password)
                 user.password = await Argon2.hash(user.password);
-        user.email = user.email.toLowerCase();
+        user.email = user.email;
         next();
 });
+
+schema.methods.loginUser = async function(password, callback) {
+        if(await Argon2.verify(this.password, password)) {
+                this.password = undefined;
+                callback(this);
+        } else {
+                callback(false);
+        };
+}
 
 function generateSupportID() {
         var supportID = "";

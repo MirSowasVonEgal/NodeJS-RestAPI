@@ -9,16 +9,21 @@ const verifyToken = (req, res, next) => {
   if (!token) {
     res.status(401);
     var response = { message: "A token is required for authentication" }
-    Response.failed(response, res);
+    Response.failed(response, req, res);
     return;
   }
   try {
     const decoded = JWT.verify(token, process.env.JWT_SECRET);
+    if(decoded.confirm) {
+      var response = { message: "Ungültiger Token" }
+      Response.failed(response, req, res);
+      return;
+    }
     req.user = decoded;
   } catch (err) {
     res.status(401);
-    var response = { message: "Invaild token" }
-    Response.failed(response, res);
+    var response = { message: "Ungültiger Token" }
+    Response.failed(response, req, res);
     return;
   }
   return next();
