@@ -1,6 +1,14 @@
 require("dotenv").config();
 var User = require('../model/User');
-var { Google, JWT, Mail } = require('../core');
+var { Google, JWT, Mail, FS } = require('../core');
+
+var Confirm_EMail = "";
+FS.readFile("./templates/mail/Confirmation.html", (error, data) => {
+    if(error) {
+        throw error;
+    }
+    Confirm_EMail = data.toString();
+});
 
 // OAuth2 from Google
 const oauth2Client = new Google.auth.OAuth2(
@@ -133,8 +141,10 @@ exports.registerUser = function(req) {
                     from: 'ShadeMC <noreplay@ShadeMC.de>',
                     to: req.body.email,
                     subject: 'ShadeMC - Verify',
-                    text: 'Mit diesem Link kannst du dich verifizieren: http://localhost:3000/v1/auth/confirm/' + token,
+                    text: Confirm_EMail.replace('%link%', 'http://localhost:3000/v1/auth/confirm/' + token).replace('%username%', result.username),
                 };
+
+                Mail
                 
                 resolve(result);
             }).catch(error => {

@@ -12,6 +12,7 @@ exports.Mail = new SMTPClient({
 });
 
 exports.JWT = require("jsonwebtoken");
+exports.FS = require("fs");
 exports.Argon2 = require("argon2");
 exports.Auth = require("../middleware/Auth");
 exports.AuthService = require('../service/AuthService');
