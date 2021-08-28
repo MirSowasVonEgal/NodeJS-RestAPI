@@ -44,7 +44,7 @@ router.post('/register', async function(req, res) {
 });
 
 
-router.get('/resetpassword', async function(req, res) {
+router.post('/resetpassword', async function(req, res) {
     AuthService.resetPassword(req)
     .then(function (response) {
         Response.successfully(response, req, res);

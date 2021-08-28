@@ -11,8 +11,6 @@ exports.Mail = new SMTPClient({
 	host: process.env.MAIL_HOST,
 	ssl: (process.env.MAIL_SSL === 'true'),
 });
-
-exports.CSV = require('objects-to-csv');
 exports.JWT = require("jsonwebtoken");
 exports.FS = require("fs");
 exports.Argon2 = require("argon2");

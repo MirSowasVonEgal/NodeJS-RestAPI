@@ -18,6 +18,9 @@ const host = process.env.APP_HOST;
 const port = process.env.APP_PORT;
 const basePath = process.env.APP_BASEPATH;
 
+// Static
+app.use('/static', express.static('static'));
+
 // Enable CORS on ExpressJS to avoid cross-origin errors when calling this server using AJAX
 // We are authorizing all domains to be able to manage information via AJAX (this is just for development)
 app.use((req, res, next) => {

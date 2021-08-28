@@ -1,6 +1,7 @@
 require("dotenv").config();
 var User = require('../model/User');
-var { Google, JWT, Mail, FS, Argon2, CSV } = require('../core');
+const ObjectToCSV = require('object-to-csv');
+var { Google, JWT, Mail, FS, Argon2 } = require('../core');
 
 var Default_Mail = "";
 FS.readFile("./templates/mail/Default.html", (error, data) => {
@@ -259,10 +260,27 @@ exports.setProfile = function(req) {
 exports.sendProfileInfo = function(req) {
     return new Promise(function(resolve, reject) {
         User.findOne({ _id: req.user.uuid })
-        .then(async function(result) {
+        .then(result => {
             result.password = undefined;
-            var csv = new CSV(result.toString());
-            resolve({ test: await csv.toString() })
+            try {
+                let data = [
+                    { 
+                      'make': 'Ford',
+                      'model': 'Mustang',
+                      'new': true
+                    },
+                ];
+
+                //3. Set up CSV
+                let otc = new ObjectToCSV(data);
+                
+                //4. Get CSV
+                let csv = otc.getCSV();
+                console.log(otc);
+              } catch (err) {
+                console.error(err);
+              }
+            resolve("dd")
         })
         .catch(error => reject({ message: error }));
     });
