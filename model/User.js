@@ -38,6 +38,15 @@ schema.methods.loginUser = async function(password, callback) {
         };
 }
 
+schema.methods.resetPassword = async function(callback) {
+        var user = this;
+        const password = generatePassword();
+        if(user.password)
+                user.password = password;
+        user.save().then();
+        callback(password);
+}
+
 function generateSupportID() {
         var supportID = "";
         for (var i = 8; i > 0; i--) {
@@ -46,6 +55,13 @@ function generateSupportID() {
                         supportID += "-";
         }
         return supportID;
+}
+
+function generatePassword() {
+               const Charecters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        let Password = "";
+        for (var i = 0, n = Charecters.length; i < 12; ++i) { Password += Charecters.charAt(Math.floor(Math.random() * n)); }
+        return Password;
 }
 
 function generateUUID(){

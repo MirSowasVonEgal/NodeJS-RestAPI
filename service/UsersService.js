@@ -1,5 +1,5 @@
 require("dotenv").config();
-
+var User = require('../model/User');
 
 exports.getUsers = function(req) {
     return new Promise(function(resolve, reject) {
@@ -21,15 +21,5 @@ exports.getUser = function(req) {
         .catch((error) => {
           reject(error);
         });
-  });
-}
-
-setClaim = function(userid) { 
-    admin.auth().setCustomUserClaims("deJlbBjmHSQ2RmuQIe5kuGWnGhG3", { rank: "Admin" }).then();
-}
-
-getClaimsByToken = function(token) { 
-  admin.auth().verifyIdToken(token).then((claims) => {
-    return claims;
   });
 }

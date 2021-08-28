@@ -5,6 +5,8 @@ var router = require("./router");
 var mongoose = require('mongoose');
 app.use(express.json());
 
+require("dotenv").config();
+
 mongoose.connect(`mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}:${process.env.MONGODB_PORT}/${process.env.MONGODB_DATABASE}`, 
 {useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false  });
 
@@ -12,7 +14,6 @@ mongoose.connect(`mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGOD
 //{useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false });
 
 // Config
-require("dotenv").config();
 const host = process.env.APP_HOST;
 const port = process.env.APP_PORT;
 const basePath = process.env.APP_BASEPATH;

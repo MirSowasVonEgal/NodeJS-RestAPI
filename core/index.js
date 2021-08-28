@@ -4,13 +4,15 @@ exports.mongoose = require('mongoose');
 const {google} = require('googleapis');
 exports.Google = google;
 var { SMTPClient } = require('emailjs');
+
 exports.Mail = new SMTPClient({
-	user: 'admin@shademc.de',
-	password: 'Timo0580!',
-	host: 'coffee.deinserverhost.de',
-	ssl: true,
+	user: process.env.MAIL_USERNAME,
+	password: process.env.MAIL_PASSWORD,
+	host: process.env.MAIL_HOST,
+	ssl: (process.env.MAIL_SSL === 'true'),
 });
 
+exports.CSV = require('objects-to-csv');
 exports.JWT = require("jsonwebtoken");
 exports.FS = require("fs");
 exports.Argon2 = require("argon2");

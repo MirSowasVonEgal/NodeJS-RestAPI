@@ -43,6 +43,27 @@ router.post('/register', async function(req, res) {
     });
 });
 
+
+router.get('/resetpassword', async function(req, res) {
+    AuthService.resetPassword(req)
+    .then(function (response) {
+        Response.successfully(response, req, res);
+    })
+    .catch(function (response) {
+        Response.failed(response, req, res);
+    });
+});
+
+router.get('/confirm/:token', async function(req, res) {
+    AuthService.confirmUser(req)
+    .then(function (response) {
+        Response.successfully(response, req, res);
+    })
+    .catch(function (response) {
+        Response.failed(response, req, res);
+    });
+});
+
 router.get('/profile', Auth, async function(req, res) {
     AuthService.getProfile(req)
     .then(function (response) {
@@ -54,8 +75,19 @@ router.get('/profile', Auth, async function(req, res) {
     });
 });
 
-router.get('/confirm/:token', async function(req, res) {
-    AuthService.confirmUser(req)
+router.post('/profile', Auth, async function(req, res) {
+    AuthService.setProfile(req)
+    .then(function (response) {
+        Response.successfully(response, req, res);
+    })
+    .catch(function (response) {
+        res.status(401);
+        Response.failed(response, req, res);
+    });
+});
+
+router.post('/profileinfo', Auth, async function(req, res) {
+    AuthService.sendProfileInfo(req)
     .then(function (response) {
         Response.successfully(response, req, res);
     })
