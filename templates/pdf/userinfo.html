@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Example 2</title>
+    <title>Nutzer Info</title>
   </head>
   <body>
     <header class="clearfix">
@@ -23,21 +23,27 @@
         <div id="client">
           <div class="to">Kundenaccount:</div>
           <h2 class="name">%username%</h2>
-          <div class="email"><a href="mailto:john@example.com">john@example.com</a></div>
+          <div class="email"><a href="mailto:%email%">%email%</a></div>
         </div>
         <div id="invoice">
-          <h1>Rechnungsnummer: %uuid%</h1>
-          <div class="date">Date of Invoice: %date%</div>
+          <h1>Kundennummer: %uuid%</h1>
+          <div class="date">Bereitstellungsdatum: %date%</div>
         </div>
       </div>
       <table border="0" cellspacing="0" cellpadding="0">
         <thead>
           <tr>
-            <th class="no">#</th>
-            <th class="desc">Beschreibung</th>
-            <td class="unit">Preis</td>
-            <td class="qty">Anzahl</td>
-            <th class="total">Gesamt</th>
+            <th class="no">confirmed</th>
+            <th class="desc">blocked</th>
+            <th class="unit">role</th>
+            <th class="qty">provider</th>
+            <th class="total">balance</th>
+            <th class="no">settings</th>
+            <th class="desc">username</th>
+            <th class="unit">email</th>
+            <th class="qty">supportid</th>
+            <th class="total">created</th>
+            <th class="no">last_login</th>
           </tr>
         </thead>
         <tbody>
@@ -52,30 +58,26 @@
         <tfoot>
           <tr>
             <td colspan="2"></td>
+            <td colspan="2">Nettopreis</td>
+            <td>8,40€</td>
+          </tr>
+          <tr>
+            <td colspan="2"></td>
+            <td colspan="2">enthaltene MwSt 19%</td>
+            <td>1,60€</td>
+          </tr>
+          <tr>
+            <td colspan="2"></td>
             <td colspan="2">Gesamtpreis</td>
             <td>10€</td>
           </tr>
-          <tr>
-            <td colspan="2"></td>
-            <td colspan="2">Nettopreis</td>
-            <td></td>
-          </tr>
-          <tr>
-            <td colspan="2"></td>
-            <td colspan="2">GRAND TOTAL</td>
-            <td>$6,500.00</td>
-          </tr>
         </tfoot>
       </table>
-      <div id="thanks">Thank you!</div>
       <div id="notices">
-        <div>NOTICE:</div>
-        <div class="notice">A finance charge of 1.5% will be made on unpaid balances after 30 days.</div>
+        <div>Zahlungsart:</div>
+        <div class="notice">%paymethod%</div>
       </div>
     </main>
-    <footer>
-      Invoice was created on a computer and is valid without the signature and seal.
-    </footer>
   </body>
 </html>
 
