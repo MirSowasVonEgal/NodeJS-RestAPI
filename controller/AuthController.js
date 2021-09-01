@@ -1,5 +1,6 @@
 require("dotenv").config();
-var { router, Response, AuthService, Auth } = require('../core');
+var router = require('express').Router();
+var { Response, AuthService, Auth } = require('../core');
 
 router.get('/google/url', async function(req, res) {
     AuthService.getGoogleURL(req)

@@ -1,6 +1,5 @@
 require("dotenv").config();
 var User = require('../model/User');
-const ObjectToCSV = require('object-to-csv');
 var { Google, JWT, Mail, FS, Argon2 } = require('../core');
 
 var Default_Mail = "";
@@ -59,6 +58,9 @@ exports.getGoogleCallback = function(req) {
                         });
 
                     } else {
+                        if(result.blocked) {
+                            reject();
+                        }
                         if(result.email.toUpperCase() === data.email.toUpperCase()) {
                             req.user = result;
                             if(result.provider == "E-Mail") {
@@ -71,10 +73,12 @@ exports.getGoogleCallback = function(req) {
                         }
                         User.updateOne({ email: data.email }, { last_login: new Date().getTime(), confirmed: data.verified_email }).then();
                         result.password = undefined;
+                        var ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress 
                         const token = JWT.sign({
                             uuid: result._id,
                             email: result.email,
                             role: result.role,
+                            ip: ip,
                         }, process.env.JWT_SECRET, { expiresIn: '2h' });
                         resolve({ user: result, token: token })
                     }
@@ -101,10 +105,13 @@ exports.loginUser = function(req) {
             }
             user.loginUser(req.body.password, function(result) {
                 if(result) {
+                    if(result == true) reject();
+                    var ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress 
                     const token = JWT.sign({
                         uuid: result._id,
                         email: result.email,
                         role: result.role,
+                        ip: ip,
                     }, process.env.JWT_SECRET, { expiresIn: '2h' });
                     resolve({ user: result, token: token })
                 } else {
@@ -180,7 +187,7 @@ exports.registerUser = function(req) {
 exports.confirmUser = function(req) {
     return new Promise(function(resolve, reject) {
         const uuid = JWT.verify(req.params.token, process.env.JWT_SECRET).uuid;
-        User.findByIdAndUpdate(uuid, { confirmed: true }).then(user => {
+        User.findByIdAndUpdate(uuid, { confirmed: true }, {new: true}).then(user => {
             req.user = user;
             resolve({ message: "Dein Account wurde erfolgreich verifiziert" });
         }).catch(error => {
@@ -229,12 +236,7 @@ exports.resetPassword = function(req) {
 
 exports.getProfile = function(req) {
     return new Promise(function(resolve, reject) {
-        User.findOne({ _id: req.user.uuid })
-        .then(result => {
-            result.password = undefined;
-            resolve({ result })
-        })
-        .catch(error => reject({ message: error }));
+        resolve(req.user);
     });
 }
 
@@ -247,9 +249,9 @@ exports.setProfile = function(req) {
             update.address = req.body.address;
         if(req.body.password)
             update.password = await Argon2.hash(req.body.password);
-        User.findByIdAndUpdate(req.user.uuid, update).then(user => {
+        User.findByIdAndUpdate(req.user.uuid, update, {new: true}).then(user => {
             req.user = user;
-            resolve({ message: "Du hast dein Profil erfolgreich aktualisiert" });
+            resolve({ user, message: "Du hast dein Profil erfolgreich aktualisiert" });
         }).catch(error => {
             reject({ message: error });
             console.log(error);
@@ -261,26 +263,37 @@ exports.sendProfileInfo = function(req) {
     return new Promise(function(resolve, reject) {
         User.findOne({ _id: req.user.uuid })
         .then(result => {
-            result.password = undefined;
-            try {
-                let data = [
-                    { 
-                      'make': 'Ford',
-                      'model': 'Mustang',
-                      'new': true
-                    },
-                ];
+            resolve({ message: "Dir werden in kürze deine Nutzerinfos zugesendet!"})
 
-                //3. Set up CSV
-                let otc = new ObjectToCSV(data);
-                
-                //4. Get CSV
-                let csv = otc.getCSV();
-                console.log(otc);
-              } catch (err) {
-                console.error(err);
-              }
-            resolve("dd")
+            result.password = undefined;
+
+            user = JSON.parse(JSON.stringify(result));
+            user.settings = JSON.stringify(result['settings']);
+            user.address = JSON.stringify(result['address']);
+
+            csv = [user].map(row => Object.values(row));
+            csv.unshift(Object.keys(user));
+            csv = csv.join('\n');
+ 
+            var mail = Default_Mail
+            .replace(/%link%/g, '')
+            .replace(/%title%/g, 'Im Anhang sind deine Nutzerinfos')
+            .replace(/%titlemessage%/g, 'Du hast deine Nutzerinfos angefordert.')
+            .replace(/%message%/g, '')
+            .replace(/%hostname%/g, process.env.WEB_HOST);
+
+
+            const message = {
+                from: process.env.MAIL_NAME +' <' + process.env.MAIL_FROM + '>',
+                to: result.email,
+                subject: process.env.MAIL_NAME + ' - Nutzerinfos',
+                attachment: [
+                    { data: mail, alternative: true },
+                    { data: csv, type: 'application/csv', name: 'Nutzerinformationen.csv' }
+                ]
+            };
+
+            Mail.send(message);
         })
         .catch(error => reject({ message: error }));
     });

@@ -19,12 +19,13 @@
     "express": "^4.17.1",
     "fs": "0.0.1-security",
     "googleapis": "^84.0.0",
+    "html-pdf": "^3.0.1",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.13.7",
     "mongoose-double": "0.0.1",
     "mongoose-long": "^0.4.1",
-    "object-to-csv": "^1.0.5",
     "opencollective-postinstall": "^2.0.3",
+    "paypal-rest-sdk": "^1.8.1",
     "translate-api": "^0.3.18"
   }
 }

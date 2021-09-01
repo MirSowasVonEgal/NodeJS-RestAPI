@@ -2,6 +2,7 @@ const package = require('./package.json');
 var express = require('express');
 var app = express();
 var router = require("./router");
+var GlobalLogs = require('./model/GlobalLogs');
 var mongoose = require('mongoose');
 app.use(express.json());
 
@@ -9,6 +10,30 @@ require("dotenv").config();
 
 mongoose.connect(`mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}:${process.env.MONGODB_PORT}/${process.env.MONGODB_DATABASE}`, 
 {useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false  });
+
+var globallogs = [];
+
+mongoose.set("debug", (collectionname, method, query, doc) => {
+  if(collectionname == 'globallogs' || method == 'createIndex') return;
+  query = JSON.stringify(query);
+  doc = JSON.stringify(doc);
+  globallogs.push({ collectionname, method, query, doc });
+});
+
+timeout();
+function timeout() {
+  setTimeout(function () {
+      if(globallogs != [])
+        GlobalLogs.insertMany(globallogs).then();
+      globallogs = [];
+      timeout();
+  }, 30000);
+}
+
+process.on('exit', function() {
+  if(globallogs != [])
+    GlobalLogs.insertMany(globallogs).then();
+});
 
 //mongoose.connect(`mongodb+srv://admin:G5WY7wZ2U6Z7tifV@cluster0.ihqwe.mongodb.net/RestAPI?retryWrites=true&w=majority`, 
 //{useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false });

@@ -3,9 +3,12 @@
   <head>
     <meta charset="utf-8">
     <title>Rechnung</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@200&display=swap" rel="stylesheet">
   </head>
   <body>
-    <header class="clearfix">
+    <header class="clearfix" style="padding-left: 20px; padding-right: 20px;">
       <div id="logo">
         <img src="http://localhost:3000/static/img/Logo-1024.png">
       </div>
@@ -25,8 +28,8 @@
           <h2 class="name">%username%</h2>
           <div class="email"><a href="mailto:%email%">%email%</a></div>
         </div>
-        <div id="invoice">
-          <h1>Rechnungsnummer: %uuid%</h1>
+        <div id="invoice" style="padding-right: 20px;">
+          <B>Rechnungsnummer: %uuid%</B>
           <div class="date">Rechnungsdatum: %date%</div>
         </div>
       </div>
@@ -43,27 +46,27 @@
         <tbody>
           <tr>
             <td class="no">01</td>
-            <td class="desc"><h3>PaySafeCard</h3>Aufladung des Kundenkontos.</td>
-            <td class="unit">10€</td>
+            <td class="desc"><h3>%product%</h3>Aufladung des Kundenkontos.</td>
+            <td class="unit">%amount% €</td>
             <td class="qty">1</td>
-            <td class="total">10€</td>
+            <td class="total">%amount% €</td>
           </tr>
         </tbody>
         <tfoot>
           <tr>
             <td colspan="2"></td>
             <td colspan="2">Nettopreis</td>
-            <td>8,40€</td>
+            <td>%netprice% €</td>
           </tr>
           <tr>
             <td colspan="2"></td>
             <td colspan="2">enthaltene MwSt 19%</td>
-            <td>1,60€</td>
+            <td>%vat% €</td>
           </tr>
           <tr>
             <td colspan="2"></td>
             <td colspan="2">Gesamtpreis</td>
-            <td>10€</td>
+            <td>%amount% €</td>
           </tr>
         </tfoot>
       </table>
@@ -76,9 +79,10 @@
 </html>
 
 <style>
-@font-face {
-  font-family: SourceSansPro;
-  src: url(SourceSansPro-Regular.ttf);
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@200&display=swap');
+
+* {
+  font-family: sans-serif;
 }
 
 .clearfix:after {
@@ -95,7 +99,6 @@ a {
 body {
   position: relative;
   width: 21cm;  
-  height: 29.7cm; 
   margin: 0 auto; 
   color: #555555;
   background: #FFFFFF; 

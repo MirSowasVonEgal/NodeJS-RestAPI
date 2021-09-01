@@ -1,23 +1,76 @@
-var { router, Response, UsersService } = require('../core');
+require("dotenv").config();
+var router = require('express').Router();
+var { Response, UsersService, Auth } = require('../core');
 
-router.get('/', async function(req, res) {
-    UsersService.getUsers(req)
-    .then(function (response) {
-        Response.successfully(response, res);
-    })
-    .catch(function (response) {
-        Response.failed(response, res);
-    });
+
+router.put('/:id', Auth, async function(req, res) {
+    if((req.user.role.permissions.find(i => i == "user")) || req.user.role.permissions.find(i => i == '*')) {
+        UsersService.updateUser(req)
+        .then(function (response) {
+            Response.successfully(response, req, res);
+        })
+        .catch(function (response) {
+            Response.failed(response, req, res);
+        });
+    } else {
+        Response.failed({ message: "Dafür hast du keine Rechte!" }, req, res);
+    }
 });
 
-router.get('/:userid', async function(req, res) {
-    UsersService.getUser(req)
-    .then(function (response) {
-        Response.successfully(response, res);
-    })
-    .catch(function (response) {
-        Response.failed(response, res);
-    });
+router.delete('/:id', Auth, async function(req, res) {
+    if((req.user.role.permissions.find(i => i == "user")) || req.user.role.permissions.find(i => i == '*')) {
+        UsersService.deleteUser(req)
+        .then(function (response) {
+            Response.successfully(response, req, res);
+        })
+        .catch(function (response) {
+            Response.failed(response, req, res);
+        });
+    } else {
+        Response.failed({ message: "Dafür hast du keine Rechte!" }, req, res);
+    }
+});
+
+router.get('/:id', Auth, async function(req, res) {
+    if((req.user.role.permissions.find(i => i == "user")) || req.user.role.permissions.find(i => i == '*')) {
+        UsersService.getUser(req)
+        .then(function (response) {
+            Response.successfully(response, req, res);
+        })
+        .catch(function (response) {
+            Response.failed(response, req, res);
+        });
+    } else {
+        Response.failed({ message: "Dafür hast du keine Rechte!" }, req, res);
+    }
+});
+
+router.get('/supportid/:id', Auth, async function(req, res) {
+    if((req.user.role.permissions.find(i => i == "user")) || req.user.role.permissions.find(i => i == '*')) {
+        UsersService.getUserBySupportID(req)
+        .then(function (response) {
+            Response.successfully(response, req, res);
+        })
+        .catch(function (response) {
+            Response.failed(response, req, res);
+        });
+    } else {
+        Response.failed({ message: "Dafür hast du keine Rechte!" }, req, res);
+    }
+});
+
+router.get('/', Auth, async function(req, res) {
+    if((req.user.role.permissions.find(i => i == "user")) || req.user.role.permissions.find(i => i == '*')) {
+        UsersService.getUsers(req)
+        .then(function (response) {
+            Response.successfully(response, req, res);
+        })
+        .catch(function (response) {
+            Response.failed(response, req, res);
+        });
+    } else {
+        Response.failed({ message: "Dafür hast du keine Rechte!" }, req, res);
+    }
 });
 
 module.exports = router;

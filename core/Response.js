@@ -2,6 +2,8 @@ const translate = require('@vitalets/google-translate-api');
 
 exports.successfully = function(response, req, res) {
     if(res.statusCode == -1) res.status(200);
+    
+    if(!response) var response = {};
     if(response.message) {
         var language = "de"
         if(req.user) {
@@ -24,6 +26,8 @@ exports.successfully = function(response, req, res) {
 
 exports.failed = function(response, req, res) {
     if(res.statusCode == -1) res.status(400);
+
+    if(!response) var response = {};
     if(!response.message) response.message = "An unknown error occurred";
     var language = "de"
     if(req.user) {
