@@ -3,6 +3,7 @@ var express = require('express');
 var app = express();
 var router = require("./router");
 var GlobalLogs = require('./model/GlobalLogs');
+var Ticket = require('./model/Ticket');
 var mongoose = require('mongoose');
 app.use(express.json());
 
@@ -20,14 +21,32 @@ mongoose.set("debug", (collectionname, method, query, doc) => {
   globallogs.push({ collectionname, method, query, doc });
 });
 
-timeout();
-function timeout() {
+
+
+minuteSchedular();
+function minuteSchedular() {
   setTimeout(function () {
       if(globallogs != [])
         GlobalLogs.insertMany(globallogs).then();
       globallogs = [];
-      timeout();
-  }, 30000);
+      minuteSchedular();
+  }, 60 * 1000);
+}
+
+hourSchedular();
+function hourSchedular() {
+  setTimeout(function () {
+        Ticket.find({ status: "Beantwortet", closed: false }).then(tickets => {
+          tickets.forEach(ticket => {
+            var date = new Date().getTime();
+            var ticketdate = Number(JSON.stringify(ticket.created).replace(/"/g, '')) + (12 * 60 * 60 * 1000);
+            if(date > ticketdate) {
+              Ticket.findByIdAndUpdate(ticket._id, { closed: true }).then();
+            }
+          });
+      });
+      hourSchedular();
+  }, 60 * 1000);
 }
 
 process.on('exit', function() {
