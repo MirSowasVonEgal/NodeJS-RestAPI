@@ -39,7 +39,7 @@ function hourSchedular() {
         Ticket.find({ status: "Beantwortet", closed: false }).then(tickets => {
           tickets.forEach(ticket => {
             var date = new Date().getTime();
-            var ticketdate = Number(JSON.stringify(ticket.created).replace(/"/g, '')) + (12 * 60 * 60 * 1000);
+            var ticketdate = Number(JSON.stringify(ticket.lastupdate).replace(/"/g, '')) + (12 * 60 * 60 * 1000);
             if(date > ticketdate) {
               Ticket.findByIdAndUpdate(ticket._id, { closed: true }).then();
             }

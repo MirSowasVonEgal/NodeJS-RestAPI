@@ -5,7 +5,7 @@ var { Response, AdminUsersService, Auth } = require('../../core');
 
 router.put('/:id', Auth, async function(req, res) {
     if((req.user.role.permissions.find(i => i == "user")) || req.user.role.permissions.find(i => i == '*')) {
-        UsersService.updateUser(req)
+        AdminUsersService.updateUser(req)
         .then(function (response) {
             Response.successfully(response, req, res);
         })
@@ -19,7 +19,7 @@ router.put('/:id', Auth, async function(req, res) {
 
 router.delete('/:id', Auth, async function(req, res) {
     if((req.user.role.permissions.find(i => i == "user")) || req.user.role.permissions.find(i => i == '*')) {
-        UsersService.deleteUser(req)
+        AdminUsersService.deleteUser(req)
         .then(function (response) {
             Response.successfully(response, req, res);
         })
@@ -33,7 +33,7 @@ router.delete('/:id', Auth, async function(req, res) {
 
 router.get('/:id', Auth, async function(req, res) {
     if((req.user.role.permissions.find(i => i == "user")) || req.user.role.permissions.find(i => i == '*')) {
-        UsersService.getUser(req)
+        AdminUsersService.getUser(req)
         .then(function (response) {
             Response.successfully(response, req, res);
         })
@@ -47,7 +47,7 @@ router.get('/:id', Auth, async function(req, res) {
 
 router.get('/supportid/:id', Auth, async function(req, res) {
     if((req.user.role.permissions.find(i => i == "user")) || req.user.role.permissions.find(i => i == '*')) {
-        UsersService.getUserBySupportID(req)
+        AdminUsersService.getUserBySupportID(req)
         .then(function (response) {
             Response.successfully(response, req, res);
         })
@@ -61,7 +61,7 @@ router.get('/supportid/:id', Auth, async function(req, res) {
 
 router.get('/', Auth, async function(req, res) {
     if((req.user.role.permissions.find(i => i == "user")) || req.user.role.permissions.find(i => i == '*')) {
-        UsersService.getUsers(req)
+        AdminUsersService.getUsers(req)
         .then(function (response) {
             Response.successfully(response, req, res);
         })

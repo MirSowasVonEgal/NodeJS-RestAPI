@@ -58,6 +58,7 @@ exports.updateTicket = function(req) {
         if(req.body.message) {
           update = { $addToSet: { messages: { date: new Date().getTime(), userid: req.user._id, username: req.user.username, role: req.user.role, message: req.body.message  }  } };
           update.status = "Offen";
+          update.lastupdate = new Date().getTime();
         }
         Ticket.findByIdAndUpdate(req.params.id, update, {new: true})
         .then(ticket => {
@@ -100,8 +101,13 @@ exports.updateTicket = function(req) {
 exports.getTickets = function(req) {
     return new Promise(function(resolve, reject) {
       Ticket.find({ userid: req.user._id })
-      .then(tickets => {
-          resolve({tickets});
+      .then(result => {
+        var tickets = [];
+        result.forEach(ticket => {
+          ticket.messages = undefined;
+          tickets.push(ticket);
+        });
+        resolve({tickets});
       });
     });
 }

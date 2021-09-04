@@ -27,6 +27,7 @@
     "node-telegram-bot-api": "^0.54.0",
     "opencollective-postinstall": "^2.0.3",
     "paypal-rest-sdk": "^1.8.1",
+    "pvea": "^0.1.0",
     "translate-api": "^0.3.18"
   }
 }

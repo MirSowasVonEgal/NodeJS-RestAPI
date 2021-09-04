@@ -13,6 +13,7 @@ const schema = new Schema ({
         telegramid: { type: Number, required: true},
         closed: { type: Boolean, default: false },
         messages: { type: Object, required: true},
+        lastupdate: { type: Number, default: () => new Date().getTime() },
 });
 
 function generateUUID(){

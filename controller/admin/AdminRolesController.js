@@ -4,7 +4,7 @@ var { Response, AdminRolesService, Auth } = require('../../core');
 
 router.post('', Auth, async function(req, res) {
     if((req.user.role.permissions.find(i => i == "role")) || req.user.role.permissions.find(i => i == '*')) {
-        RolesService.createRole(req)
+        AdminRolesService.createRole(req)
         .then(function (response) {
             Response.successfully(response, req, res);
         })
@@ -18,7 +18,7 @@ router.post('', Auth, async function(req, res) {
 
 router.put('/:id', Auth, async function(req, res) {
     if((req.user.role.permissions.find(i => i == "role")) || req.user.role.permissions.find(i => i == '*')) {
-        RolesService.updateRole(req)
+        AdminRolesService.updateRole(req)
         .then(function (response) {
             Response.successfully(response, req, res);
         })
@@ -32,7 +32,7 @@ router.put('/:id', Auth, async function(req, res) {
 
 router.delete('/:id', Auth, async function(req, res) {
     if((req.user.role.permissions.find(i => i == "role")) || req.user.role.permissions.find(i => i == '*')) {
-        RolesService.deleteRole(req)
+        AdminRolesService.deleteRole(req)
         .then(function (response) {
             Response.successfully(response, req, res);
         })
@@ -46,7 +46,7 @@ router.delete('/:id', Auth, async function(req, res) {
 
 router.get('/:id', Auth, async function(req, res) {
     if((req.user.role.permissions.find(i => i == "role")) || req.user.role.permissions.find(i => i == '*')) {
-        RolesService.getRole(req)
+        AdminRolesService.getRole(req)
         .then(function (response) {
             Response.successfully(response, req, res);
         })
@@ -60,7 +60,7 @@ router.get('/:id', Auth, async function(req, res) {
 
 router.get('/', Auth, async function(req, res) {
     if((req.user.role.permissions.find(i => i == "role")) || req.user.role.permissions.find(i => i == '*')) {
-        RolesService.getRoles(req)
+        AdminRolesService.getRoles(req)
         .then(function (response) {
             Response.successfully(response, req, res);
         })

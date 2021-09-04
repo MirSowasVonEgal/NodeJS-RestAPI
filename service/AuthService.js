@@ -1,14 +1,6 @@
 require("dotenv").config();
 var User = require('../model/User');
-var { Google, JWT, Mail, FS, Argon2 } = require('../core');
-
-var Default_Mail = "";
-FS.readFile("./templates/mail/Default.html", (error, data) => {
-    if(error) {
-        throw error;
-    }
-    Default_Mail = data.toString();
-});
+var { Google, JWT, Mail, Default_Mail, FS, Argon2 } = require('../core');
 
 // OAuth2 from Google
 const oauth2Client = new Google.auth.OAuth2(
@@ -45,11 +37,13 @@ exports.getGoogleCallback = function(req) {
                         new User({ username: data.name, email: data.email, provider: "Google", confirmed: data.verified_email, settings: { language: data.locale } }).save()
                         .then(result => {
                             result.password = undefined;
+                            var ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress 
                             const token = JWT.sign({
                                 uuid: result._id,
                                 email: result.email,
                                 role: result.role,
-                            }, process.env.JWT_SECRET, { expiresIn: '2h' });
+                                ip: ip,
+                            }, process.env.JWT_SECRET, { expiresIn: '12h' });
                             resolve({ user: result, token: token })
                         })
                         .catch(error => {
@@ -79,7 +73,7 @@ exports.getGoogleCallback = function(req) {
                             email: result.email,
                             role: result.role,
                             ip: ip,
-                        }, process.env.JWT_SECRET, { expiresIn: '2h' });
+                        }, process.env.JWT_SECRET, { expiresIn: '12h' });
                         resolve({ user: result, token: token })
                     }
                 });
@@ -112,7 +106,7 @@ exports.loginUser = function(req) {
                         email: result.email,
                         role: result.role,
                         ip: ip,
-                    }, process.env.JWT_SECRET, { expiresIn: '2h' });
+                    }, process.env.JWT_SECRET, { expiresIn: '12h' });
                     resolve({ user: result, token: token })
                 } else {
                     reject({ message: "Die Passwörter stimmten nicht überein" })
@@ -158,7 +152,7 @@ exports.registerUser = function(req) {
                 }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
                 var mail = Default_Mail
-                    .replace(/%link%/g, 'http://localhost:3000/v1/auth/confirm/' + token)
+                    .replace(/%link%/g, process.env.MAIL_CONFIRM_LINK.replace("%id%", token))
                     .replace(/%title%/g, 'Account Bestätigen')
                     .replace(/%titlemessage%/g, 'Du hast es fast geschafft, ' + result.username +  '!')
                     .replace(/%message%/g, 'Du hast erfolgreich ein Konto erstellt. Um es zu aktivieren, klicke bitte unten, um deine E-Mail Adresse zu verifizieren.')
@@ -174,7 +168,10 @@ exports.registerUser = function(req) {
                     ]
                 };
 
-                Mail.send(message);
+                Mail.send(message, function (err, message) {
+                    if(err)
+                        console.log(err);
+                });
                 
             }).catch(error => {
                 reject({ message: error });
