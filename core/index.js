@@ -34,26 +34,31 @@ const pvea = new pveajs('192.168.2.133', 'root@pam', 'Timo0580');
  function main() {
     // get version of proxmox API.
 	
-    pvea.getLxcContainerStatus("pve", 110).then(res => {
+    pvea.getLxcConfig("pve", 105).then(res => {
 		console.log(res)
 	});
-    pvea.getClusterNextid().then(nextid => {
+    pvea.getNextVMID().then(nextid => {
+		/*
 		params = {
 			vmid: nextid,
-			ostemplate: "local:vztmpl/debian-11-standard_11.0-1_amd64.tar.gz",
+			ostemplate: "local:vztmpl/debian-10-standard_10.7-1_amd64.tar.gz",
 			storage: 'local-lvm',
 			cores: 6,
 			memory: 2048,
 			password: 'Timo0580',
 			start: 1,
-			net0: 'virtio=3A:39:38:30:36:31,bridge=vmbr0'
+			net0: 'name=eth0,bridge=vmbr0,firewall=1,ip=dhcp,ip6=dhcp,type=veth'
 		}
+		
         pvea.createLxcContainer("pve", params).then(lxc => {
 			if(lxc.status == 200) {
 				console.log(lxc.data)
 			} else {
 				console.log("Error!")
 			}
+		})*/
+		pvea.cloneQemuVm("pve", 110, { newid: 151 }).then(qemu => {
+			console.log(qemu.data)
 		})
     })
 }
