@@ -26,45 +26,9 @@ TelegramBot.onText(/\/chatid/, (msg, match) => {
 });
 exports.TelegramBot = TelegramBot;
 
-// pvea library.
 const pveajs = require("pvea")
-
-// create a new instance, you can use this to connect to multiple nodes if you want.
-const pvea = new pveajs('192.168.2.133', 'root@pam', 'Timo0580');
- function main() {
-    // get version of proxmox API.
-	
-    pvea.getLxcConfig("pve", 105).then(res => {
-		console.log(res)
-	});
-    pvea.getNextVMID().then(nextid => {
-		/*
-		params = {
-			vmid: nextid,
-			ostemplate: "local:vztmpl/debian-10-standard_10.7-1_amd64.tar.gz",
-			storage: 'local-lvm',
-			cores: 6,
-			memory: 2048,
-			password: 'Timo0580',
-			start: 1,
-			net0: 'name=eth0,bridge=vmbr0,firewall=1,ip=dhcp,ip6=dhcp,type=veth'
-		}
-		
-        pvea.createLxcContainer("pve", params).then(lxc => {
-			if(lxc.status == 200) {
-				console.log(lxc.data)
-			} else {
-				console.log("Error!")
-			}
-		})*/
-		pvea.cloneQemuVm("pve", 110, { newid: 151 }).then(qemu => {
-			console.log(qemu.data)
-		})
-    })
-}
-
-// execute the application.
-pvea.run(main)
+exports.Proxmox = new pveajs(process.env.PROXMOX_HOST, process.env.PROXMOX_USER, process.env.PROXMOX_PASSWORD);
+    
 
 exports.JWT = require("jsonwebtoken");
 exports.PDF = require('html-pdf');
@@ -76,11 +40,19 @@ exports.Auth = require("../middleware/Auth");
 exports.AuthService = require('../service/AuthService');
 exports.InvoiceService = require('../service/InvoiceService');
 exports.TicketService = require('../service/TicketService');
+exports.VServerService = require('../service/VServerService');
+exports.ProductService = require('../service/ProductService');
+exports.OSService = require('../service/OSService');
 
 // Admin Service
 exports.AdminUsersService = require('../service/admin/AdminUsersService');
 exports.AdminRolesService = require('../service/admin/AdminRolesService');
 exports.AdminTicketService = require('../service/admin/AdminTicketService');
+exports.AdminVServerService = require('../service/admin/AdminVServerService');
+exports.AdminNetworkService = require('../service/admin/AdminNetworkService');
+exports.AdminProductService = require('../service/admin/AdminProductService');
+exports.AdminOSService = require('../service/admin/AdminOSService');
+exports.AdminRootServerService = require('../service/admin/AdminRootServerService');
 
 
 // Payment Services

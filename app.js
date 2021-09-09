@@ -4,13 +4,33 @@ var app = express();
 var router = require("./router");
 var GlobalLogs = require('./model/GlobalLogs');
 var Ticket = require('./model/Ticket');
+var VServer = require('./model/VServer');
+var Network = require('./model/Network');
 var mongoose = require('mongoose');
 app.use(express.json());
 
 require("dotenv").config();
 
-mongoose.connect(`mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}:${process.env.MONGODB_PORT}/${process.env.MONGODB_DATABASE}`, 
-{useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false  });
+var mongoose = require('mongoose');
+const { Proxmox } = require('./core');
+
+var isConnectedBefore = false;
+var connect = function() {
+  mongoose.connect(`mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}:${process.env.MONGODB_PORT}/${process.env.MONGODB_DATABASE}`, 
+  {useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false, auto_reconnect: true });
+};
+
+connect();
+
+mongoose.connection.on('disconnected', function(){
+    console.log('Lost MongoDB connection...');
+    if (!isConnectedBefore)
+        connect();
+});
+mongoose.connection.on('connected', function() {
+    isConnectedBefore = true;
+    console.log('MongoDB connected ...');
+});
 
 var globallogs = [];
 
@@ -43,10 +63,24 @@ function hourSchedular() {
             if(date > ticketdate) {
               Ticket.findByIdAndUpdate(ticket._id, { closed: true }).then();
             }
+        });
+        VServer.find({ paidup: { $lte: new Date().getTime() } }).then(vservers => {
+          vserver_filtered = vservers.filter(i => i.paidup !== -1)
+          vserver_filtered.forEach(vserver => {
+            if(parseInt(vserver.paidup + (86400000*7)) > parseInt(new Date().getTime())) {
+              Proxmox.stopLxcContainer(vserver.node, vserver.serverid).then();
+              VServer.findByIdAndUpdate(vserver._id, { blocked: true }).then();
+            } else {
+              VServer.findByIdAndDelete(vserver._id).then();
+              Network.deleteMany({ serverid: vserver._id, type: 'IPv6'});
+              Network.updateMany({ serverid: vserver._id, type: 'IPv4'}, { serverid: null, serveruuid: null, servertype: null });
+              Proxmox.deleteLxcContainer(vserver.node, vserver.serverid).then();
+            }
           });
+        });
       });
       hourSchedular();
-  }, 60 * 1000);
+  }, 60 * 60 * 1000);
 }
 
 process.on('exit', function() {

@@ -1,6 +1,6 @@
 require("dotenv").config();
 var User = require('../model/User');
-var { Google, JWT, Mail, Default_Mail, FS, Argon2 } = require('../core');
+var { Google, JWT, Mail, Default_Mail, Argon2, Proxmox } = require('../core');
 
 // OAuth2 from Google
 const oauth2Client = new Google.auth.OAuth2(
@@ -45,6 +45,7 @@ exports.getGoogleCallback = function(req) {
                                 ip: ip,
                             }, process.env.JWT_SECRET, { expiresIn: '12h' });
                             resolve({ user: result, token: token })
+                            Proxmox.createAccessUser({ userid: result._id + "@pve" }).then();
                         })
                         .catch(error => {
                             console.log(error) 
@@ -172,6 +173,7 @@ exports.registerUser = function(req) {
                     if(err)
                         console.log(err);
                 });
+                Proxmox.createAccessUser({ userid: result._id + "@pve" }).then();
                 
             }).catch(error => {
                 reject({ message: error });
