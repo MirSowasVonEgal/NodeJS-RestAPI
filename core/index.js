@@ -43,6 +43,7 @@ exports.TicketService = require('../service/TicketService');
 exports.VServerService = require('../service/VServerService');
 exports.ProductService = require('../service/ProductService');
 exports.OSService = require('../service/OSService');
+exports.RootServerService = require('../service/RootServerService');
 
 // Admin Service
 exports.AdminUsersService = require('../service/admin/AdminUsersService');

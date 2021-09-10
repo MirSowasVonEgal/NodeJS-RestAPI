@@ -16,7 +16,7 @@ router.post('', Auth, async function(req, res) {
 
 router.get('', Auth, async function(req, res) {
     if((req.user.role.permissions.find(i => i == "rootserver")) || req.user.role.permissions.find(i => i == '*')) {
-        AdminRootServerService.getVServers(req)
+        AdminRootServerService.getRootServers(req)
         .then(function (response) {
             Response.successfully(response, req, res);
         })
@@ -28,7 +28,7 @@ router.get('', Auth, async function(req, res) {
 
 router.get('/:id', Auth, async function(req, res) {
     if((req.user.role.permissions.find(i => i == "rootserver")) || req.user.role.permissions.find(i => i == '*')) {
-        AdminRootServerService.getVServer(req)
+        AdminRootServerService.getRootServer(req)
         .then(function (response) {
             Response.successfully(response, req, res);
         })
@@ -40,7 +40,7 @@ router.get('/:id', Auth, async function(req, res) {
 
 router.post('/:id/start', Auth, async function(req, res) {
     if((req.user.role.permissions.find(i => i == "rootserver")) || req.user.role.permissions.find(i => i == '*')) {
-        AdminRootServerService.startVServer(req)
+        AdminRootServerService.startRootServer(req)
         .then(function (response) {
             Response.successfully(response, req, res);
         })
@@ -52,7 +52,7 @@ router.post('/:id/start', Auth, async function(req, res) {
 
 router.post('/:id/stop', Auth, async function(req, res) {
     if((req.user.role.permissions.find(i => i == "rootserver")) || req.user.role.permissions.find(i => i == '*')) {
-        AdminRootServerService.stopVServer(req)
+        AdminRootServerService.stopRootServer(req)
         .then(function (response) {
             Response.successfully(response, req, res);
         })
@@ -64,7 +64,7 @@ router.post('/:id/stop', Auth, async function(req, res) {
 
 router.post('/:id/reboot', Auth, async function(req, res) {
     if((req.user.role.permissions.find(i => i == "rootserver")) || req.user.role.permissions.find(i => i == '*')) {
-        AdminRootServerService.rebootVServer(req)
+        AdminRootServerService.rebootRootServer(req)
         .then(function (response) {
             Response.successfully(response, req, res);
         })
@@ -76,7 +76,7 @@ router.post('/:id/reboot', Auth, async function(req, res) {
 
 router.post('/:id/shutdown', Auth, async function(req, res) {
     if((req.user.role.permissions.find(i => i == "rootserver")) || req.user.role.permissions.find(i => i == '*')) {
-        AdminRootServerService.shutdownVServer(req)
+        AdminRootServerService.shutdownRootServer(req)
         .then(function (response) {
             Response.successfully(response, req, res);
         })
@@ -88,7 +88,7 @@ router.post('/:id/shutdown', Auth, async function(req, res) {
 
 router.get('/user/:id', Auth, async function(req, res) {
     if((req.user.role.permissions.find(i => i == "rootserver")) || req.user.role.permissions.find(i => i == '*')) {
-        AdminRootServerService.getVServersByUser(req)
+        AdminRootServerService.getRootServersByUser(req)
         .then(function (response) {
             Response.successfully(response, req, res);
         })

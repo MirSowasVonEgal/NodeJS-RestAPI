@@ -5,6 +5,7 @@ var router = require("./router");
 var GlobalLogs = require('./model/GlobalLogs');
 var Ticket = require('./model/Ticket');
 var VServer = require('./model/VServer');
+var RootServer = require('./model/RootServer');
 var Network = require('./model/Network');
 var mongoose = require('mongoose');
 app.use(express.json());
@@ -75,6 +76,20 @@ function hourSchedular() {
               Network.deleteMany({ serverid: vserver._id, type: 'IPv6'});
               Network.updateMany({ serverid: vserver._id, type: 'IPv4'}, { serverid: null, serveruuid: null, servertype: null });
               Proxmox.deleteLxcContainer(vserver.node, vserver.serverid).then();
+            }
+          });
+        });
+        RootServer.find({ paidup: { $lte: new Date().getTime() } }).then(rootservers => {
+          rootserver_filtered = rootservers.filter(i => i.paidup !== -1)
+          rootserver_filtered.forEach(rootserver => {
+            if(parseInt(rootserver.paidup + (86400000*7)) > parseInt(new Date().getTime())) {
+              Proxmox.stopQemuVm(rootserver.node, rootserver.serverid).then();
+              RootServer.findByIdAndUpdate(rootserver._id, { blocked: true }).then();
+            } else {
+              RootServer.findByIdAndDelete(rootserver._id).then();
+              Network.deleteMany({ serverid: rootserver._id, type: 'IPv6'});
+              Network.updateMany({ serverid: rootserver._id, type: 'IPv4'}, { serverid: null, serveruuid: null, servertype: null });
+              Proxmox.deleteQemuVm(rootserver.node, rootserver.serverid).then();
             }
           });
         });

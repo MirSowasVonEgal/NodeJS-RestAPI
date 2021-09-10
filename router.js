@@ -9,6 +9,7 @@ var TicketController = require('./controller/TicketController');
 var VServerController = require('./controller/VServerController');
 var ProductController = require('./controller/ProductController');
 var OSController = require('./controller/OSController');
+var RootServerController = require('./controller/RootServerController');
 
 // Admin Controllers
 var AdminTicketController = require('./controller/admin/AdminTicketController');
@@ -28,6 +29,7 @@ app.use('/ticket', TicketController);
 app.use('/vserver', VServerController);
 app.use('/product', ProductController);
 app.use('/os', OSController);
+app.use('/rootserver', RootServerController);
 
 // Use Admin Controllers
 app.use('/admin/users', AdminUsersController);
