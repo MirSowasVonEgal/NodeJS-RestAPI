@@ -98,9 +98,21 @@ router.get('/user/:id', Auth, async function(req, res) {
     }
 });
 
-router.get('/user/:id/vnc', Auth, async function(req, res) {
+router.get('/:id/vnc', Auth, async function(req, res) {
     if((req.user.role.permissions.find(i => i == "rootserver")) || req.user.role.permissions.find(i => i == '*')) {
         AdminRootServerService.getVNC(req)
+        .then(function (response) {
+            Response.successfully(response, req, res);
+        })
+        .catch(function (response) {
+            Response.failed(response, req, res);
+        });
+    }
+});
+
+router.post('/:id/extend', Auth, async function(req, res) {
+    if((req.user.role.permissions.find(i => i == "rootserver")) || req.user.role.permissions.find(i => i == '*')) {
+        AdminRootServerService.extendRootServer(req)
         .then(function (response) {
             Response.successfully(response, req, res);
         })

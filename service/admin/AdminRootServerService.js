@@ -80,9 +80,9 @@ exports.createRootServer = function(req) {
 
 exports.getVNC = function(req) {
     return new Promise(function(resolve, reject) {
-        rootserver.findById(req.params.id).then(rootserver => {
+        RootServer.findById(req.params.id).then(rootserver => {
         Proxmox.createAccessTicket({ password: Proxmox.ticket, username: req.user._id + "@pve" }).then(kvm => {
-            resolve({ url: "https://" + process.env.PROXMOX_HOST + ":8006/?console=kvm&xtermjs=1&vmid=" + rootserver.serverid + "&node=" + rootserver.node + "&cmd=", CSRFPreventionToken: kvm.data.data.CSRFPreventionToken, cookie: "PVEAuthCookie=" + kvm.data.data.ticket });
+            resolve({ url: "https://" + process.env.PROXMOX_HOST + ":8006/?console=kvm&novnc=1&vmid=" + rootserver.serverid + "&node=" + rootserver.node + "&cmd=", CSRFPreventionToken: kvm.data.data.CSRFPreventionToken, cookie: "PVEAuthCookie=" + kvm.data.data.ticket });
         });
       }).catch(error => {
         reject(error)
@@ -206,6 +206,15 @@ exports.rebootRootServer = function(req) {
       }).catch(error => {
         reject(error)
       })
+    });
+}
+
+exports.extendRootServer = function(req) {
+    return new Promise(function(resolve, reject) {
+        if(req.body.duration == null) return reject();
+        if(typeof req.body.duration == 'number') return reject();
+        RootServer.findByIdAndUpdate(req.params.id, { $inc: { paidup: (86400000 * req.body.duration) } }).then();
+        resolve({ message: "Der Server wurde erfolgreich verlängert" });
     });
 }
 

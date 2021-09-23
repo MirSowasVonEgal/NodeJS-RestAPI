@@ -11,9 +11,9 @@ PayPal.configure({
 
 exports.getURL = function(req) {
     return new Promise(function(resolve, reject) {
-        if(!req.body.amount) return reject({ message: "Der Betrag muss eine Zahl sein" });
-        if(isNaN(req.body.amount.replace(",", "."))) return reject({ message: "Der Betrag muss eine Zahl sein" });
-        var amount = parseFloat(req.body.amount.replace(",", ".")).toFixed(2);
+        if(!req.query.amount) return reject({ message: "Der Betrag muss eine Zahl sein" });
+        if(isNaN(req.query.amount.replace(",", "."))) return reject({ message: "Der Betrag muss eine Zahl sein" });
+        var amount = parseFloat(req.query.amount.replace(",", ".")).toFixed(2);
 
         var payment_json = {
             "intent": "sale",
@@ -52,10 +52,10 @@ exports.getURL = function(req) {
 
 exports.chargeUser = function(req) {
     return new Promise(function(resolve, reject) {
-        if(!req.query.PayerID) return reject({ message: "Die Zahlung ist fehlgeschlagen" });
-        if(!req.query.paymentId) return reject({ message: "Die Zahlung ist fehlgeschlagen" });
-        const payerId = req.query.PayerID;
-        const paymentId = req.query.paymentId;
+        if(!req.body.payerid) return reject({ message: "Die Zahlung ist fehlgeschlagen" });
+        if(!req.body.paymentid) return reject({ message: "Die Zahlung ist fehlgeschlagen" });
+        const payerId = req.body.payerid;
+        const paymentId = req.body.paymentid;
 
         var execute_payment_json = {
             "payer_id": payerId
@@ -71,7 +71,7 @@ exports.chargeUser = function(req) {
                     if(!result) {
                         new Invoice({ user: req.user, userid: req.user._id, serviceid: payment.id, method: 'PayPal', amount: payment.transactions[0].amount.total, status: 'Bezahlt', data: JSON.stringify(payment) }).save()
                         .then();
-                        User.findByIdAndUpdate(req.user._id, { $inc : { 'balance': payment.transactions[0].amount.total } }).then();
+                        User.findByIdAndUpdate(req.user._id, { balance: Number(Number(req.user.balance) + Number(payment.transactions[0].amount.total)) }).then();
                     }
                 });
             }

@@ -22,7 +22,7 @@ exports.orderVServer = function(req) {
         var price = ((((product.price + ipv4s- 1) / 30)));
         req.body.password = generatePassword(16);
         if(req.user.balance >= (price * duration).toFixed(2)) {
-            User.findByIdAndUpdate(req.user._id, { $inc : { 'balance': (duration * price * (-1)).toFixed(2) } }).then();
+            User.findByIdAndUpdate(req.user._id, { balance: (req.user.balance - (duration * price)).toFixed(2) }).then();
             Proxmox.getNodes().then(nodes => {
                 var node = nodes[0].node;
                 Proxmox.getNextVMID().then(nextid => {
@@ -83,9 +83,27 @@ exports.orderVServer = function(req) {
     });
 }
 
+exports.extendVServer = function(req) {
+    return new Promise(function(resolve, reject) {
+        if(req.body.duration == null) return reject();
+        if(typeof req.body.duration == 'number') return reject();
+        VServer.findById(req.params.id).then(vserver => {
+            var price = ((vserver.price / 30) * req.body.duration).toFixed(2);
+            if(req.user.balance >= price) {
+                User.findByIdAndUpdate(req.user._id, { balance: (req.user.balance - price) }).then();
+                VServer.findByIdAndUpdate(req.params.id, { $inc: { paidup: (86400000 * req.body.duration) } }).then();
+                resolve({ message: "Der Server wurde erfolgreich verlängert" });
+            } else {
+                return reject({ message: "Du hast nicht genung Guthaben" });
+            }
+        })
+    });
+}
+
 exports.getVServer = function(req) {
     return new Promise(function(resolve, reject) {
       VServer.findById(req.params.id).then(vserver => {
+        if(vserver == null) return reject();
         if(vserver.userid != req.user._id) return reject();
         Network.find({ serveruuid: req.params.id }).then(networks => {
         Proxmox.getLxcContainerStatus(vserver.node, vserver.serverid).then(status => {
@@ -149,7 +167,7 @@ exports.getVNC = function(req) {
       VServer.findById(req.params.id).then(async vserver => {
         if(vserver.userid != req.user._id) return reject();
         Proxmox.createAccessTicket({ password: Proxmox.ticket, username: req.user._id + "@pve" }).then(lxc => {
-            resolve({ url: "https://" + process.env.PROXMOX_HOST + ":8006/?console=lxc&xtermjs=1&vmid=" + vserver.serverid + "&node=" + vserver.node + "&cmd=", CSRFPreventionToken: lxc.data.data.CSRFPreventionToken, cookie: "PVEAuthCookie=" + lxc.data.data.ticket });
+            resolve({ url: "https://" + process.env.PROXMOX_HOST + ":8006/?console=lxc&novnc=1&vmid=" + vserver.serverid + "&node=" + vserver.node + "&cmd=", CSRFPreventionToken: lxc.data.data.CSRFPreventionToken, cookie: "PVEAuthCookie=" + lxc.data.data.ticket });
         });
       }).catch(error => {
         reject(error)

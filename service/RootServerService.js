@@ -23,7 +23,7 @@ exports.orderRootServer = function(req) {
         var price = ((((product.price + ipv4s- 1) / 30)));
         password = generatePassword(16);
         if(req.user.balance >= (price * duration).toFixed(2)) {
-            User.findByIdAndUpdate(req.user._id, { $inc : { 'balance': (duration * price * (-1)).toFixed(2) } }).then();
+            User.findByIdAndUpdate(req.user._id, { balance: (req.user.balance - (duration * price)).toFixed(2) }).then();
             OS.findOne({ os: req.body.os }).then(server_os => {
                 Proxmox.getNodes().then(nodes => {
                     var node = nodes[0].node;
@@ -58,7 +58,7 @@ exports.orderRootServer = function(req) {
                                                 Proxmox.putAccessAcl({ path: "/vms/"+ rootserver.serverid, roles: "VNC", users: req.user._id + "@pve" });
                                                 setTimeout(function(){
                                                     Proxmox.setQemuVmConfig(rootserver.node, rootserver.serverid, params);
-                                                    Proxmox.resizeQemuVm(rootserver.node, rootserver.serverid, { disk: 'scsi0', size: '+' + (product.data.disk-10) + 'G'  });
+                                                    Proxmox.resizeQemuVm(rootserver.node, rootserver.serverid, { disk: 'scsi0', size: '+' + (product.data.disk-5) + 'G'  });
                                             }, 1000 * 60 * 2);
                                             } else {
                                                 reject();
@@ -96,6 +96,7 @@ exports.getVNC = function(req) {
 exports.getRootServer = function(req) {
     return new Promise(function(resolve, reject) {
       RootServer.findById(req.params.id).then(rootserver => {
+        if(rootserver == null) return reject();
         if(rootserver.userid != req.user._id) return reject();
         Network.find({ serveruuid: req.params.id }).then(networks => {
             Proxmox.getQemuVmConfig(rootserver.node, rootserver.serverid).then(config => {
@@ -162,6 +163,23 @@ exports.getRootServer = function(req) {
         })
     })
     })
+    });
+}
+
+exports.extendRootServer = function(req) {
+    return new Promise(function(resolve, reject) {
+        if(req.body.duration == null) return reject();
+        if(typeof req.body.duration == 'number') return reject();
+        RootServer.findById(req.params.id).then(rootserver => {
+            var price = ((rootserver.price / 30) * req.body.duration).toFixed(2);
+            if(req.user.balance >= price) {
+                User.findByIdAndUpdate(req.user._id, { balance: (req.user.balance - price) }).then();
+                RootServer.findByIdAndUpdate(req.params.id, { $inc: { paidup: (86400000 * req.body.duration) } }).then();
+                resolve({ message: "Der Server wurde erfolgreich verlängert" });
+            } else {
+                return reject({ message: "Du hast nicht genung Guthaben" });
+            }
+        })
     });
 }
 

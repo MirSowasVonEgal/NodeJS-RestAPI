@@ -85,7 +85,7 @@ exports.getVNC = function(req) {
     return new Promise(function(resolve, reject) {
       VServer.findById(req.params.id).then(async vserver => {
         Proxmox.createAccessTicket({ password: Proxmox.ticket, username: req.user._id + "@pve" }).then(lxc => {
-            resolve({ url: "https://" + process.env.PROXMOX_HOST + ":8006/?console=lxc&xtermjs=1&vmid=" + vserver.serverid + "&node=" + vserver.node + "&cmd=", CSRFPreventionToken: lxc.data.data.CSRFPreventionToken, cookie: "PVEAuthCookie=" + lxc.data.data.ticket });
+            resolve({ url: "https://" + process.env.PROXMOX_HOST + ":8006/?console=lxc&novnc=1&vmid=" + vserver.serverid + "&node=" + vserver.node + "&cmd=", CSRFPreventionToken: lxc.data.data.CSRFPreventionToken, cookie: "PVEAuthCookie=" + lxc.data.data.ticket });
         });
       }).catch(error => {
         reject(error)
@@ -208,6 +208,16 @@ exports.rebootVServer = function(req) {
       })
     });
 }
+
+exports.extendVServer = function(req) {
+    return new Promise(function(resolve, reject) {
+        if(req.body.duration == null) return reject();
+        if(typeof req.body.duration == 'number') return reject();
+        VServer.findByIdAndUpdate(req.params.id, { $inc: { paidup: (86400000 * req.body.duration) } }).then();
+        resolve({ message: "Der Server wurde erfolgreich verlängert" });
+    });
+}
+
 
 exports.getVServers = function(req) {
     return new Promise(async function(resolve, reject) {

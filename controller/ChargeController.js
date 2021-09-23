@@ -3,7 +3,7 @@ var router = require('express').Router();
 var { Response, PayPalService, Auth } = require('../core');
 
 
-router.post('/paypal', Auth, async function(req, res) {
+router.get('/paypal', Auth, async function(req, res) {
     PayPalService.getURL(req)
     .then(function (response) {
         Response.successfully(response, req, res);
@@ -13,7 +13,7 @@ router.post('/paypal', Auth, async function(req, res) {
     });
 });
 
-router.get('/paypal', Auth, async function(req, res) {
+router.post('/paypal', Auth, async function(req, res) {
     PayPalService.chargeUser(req)
     .then(function (response) {
         Response.successfully(response, req, res);

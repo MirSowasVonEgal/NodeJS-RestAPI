@@ -8,7 +8,12 @@ var VServer = require('./model/VServer');
 var RootServer = require('./model/RootServer');
 var Network = require('./model/Network');
 var mongoose = require('mongoose');
+var cors = require('cors')
+
 app.use(express.json());
+app.use(cors({
+  origin: ['http://localhost:8080']
+}));
 
 require("dotenv").config();
 

@@ -43,6 +43,16 @@ router.get('/:id/vnc', Auth, async function(req, res) {
     });
 });
 
+router.post('/:id/extend', Auth, async function(req, res) {
+    VServerService.extendVServer(req)
+    .then(function (response) {
+        Response.successfully(response, req, res);
+    })
+    .catch(function (response) {
+        Response.failed(response, req, res);
+    });
+});
+
 router.post('/:id/start', Auth, async function(req, res) {
     VServerService.startVServer(req)
     .then(function (response) {

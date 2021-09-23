@@ -25,7 +25,6 @@ router.get('/google/callback', async function(req, res) {
 router.post('/login', async function(req, res) {
     AuthService.loginUser(req)
     .then(function (response) {
-        response.message = "You have successfully logged in";
         Response.successfully(response, req, res);
     })
     .catch(function (response) {
@@ -36,7 +35,6 @@ router.post('/login', async function(req, res) {
 router.post('/register', async function(req, res) {
     AuthService.registerUser(req)
     .then(function (response) {
-        response.message = "You have successfully registered";
         Response.successfully(response, req, res);
     })
     .catch(function (response) {
@@ -55,7 +53,7 @@ router.post('/resetpassword', async function(req, res) {
     });
 });
 
-router.get('/confirm/:token', async function(req, res) {
+router.post('/confirm/:token', async function(req, res) {
     AuthService.confirmUser(req)
     .then(function (response) {
         Response.successfully(response, req, res);

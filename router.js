@@ -24,7 +24,7 @@ var AdminRootServerController = require('./controller/admin/AdminRootServerContr
 // Use Controllers
 app.use('/auth', AuthController);
 app.use('/charge', ChargeController);
-app.use('/invoices', InvoiceController);
+app.use('/invoice', InvoiceController);
 app.use('/ticket', TicketController);
 app.use('/vserver', VServerController);
 app.use('/product', ProductController);

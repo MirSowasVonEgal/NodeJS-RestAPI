@@ -75,7 +75,7 @@ exports.getGoogleCallback = function(req) {
                             role: result.role,
                             ip: ip,
                         }, process.env.JWT_SECRET, { expiresIn: '12h' });
-                        resolve({ user: result, token: token })
+                        resolve({ message: "Du hast dich erfolgreich angemeldet", user: result, token: token })
                     }
                 });
                 
@@ -108,7 +108,8 @@ exports.loginUser = function(req) {
                         role: result.role,
                         ip: ip,
                     }, process.env.JWT_SECRET, { expiresIn: '12h' });
-                    resolve({ user: result, token: token })
+                    User.findByIdAndUpdate(req.user._id, { last_login: new Date().getTime() }).then()
+                    resolve({ message: "Du hast dich erfolgreich angemeldet", user: result, token: token })
                 } else {
                     reject({ message: "Die Passwörter stimmten nicht überein" })
                 }
@@ -141,7 +142,7 @@ exports.registerUser = function(req) {
                     return;
                 }
             }
-            new User({ username: req.body.username, email: req.body.email, password: req.body.password }).save()
+            new User({ message: "Du hast dich erfolreich registriert", username: req.body.username, email: req.body.email, password: req.body.password }).save()
             .then(result => {
                 result.password = undefined;
 
@@ -188,7 +189,16 @@ exports.confirmUser = function(req) {
         const uuid = JWT.verify(req.params.token, process.env.JWT_SECRET).uuid;
         User.findByIdAndUpdate(uuid, { confirmed: true }, {new: true}).then(user => {
             req.user = user;
-            resolve({ message: "Dein Account wurde erfolgreich verifiziert" });
+
+            var ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress 
+            const token = JWT.sign({
+                uuid: user._id,
+                email: user.email,
+                role: user.role,
+                ip: ip,
+            }, process.env.JWT_SECRET, { expiresIn: '12h' });
+
+            resolve({ user, token, message: "Dein Account wurde erfolgreich verifiziert" });
         }).catch(error => {
             reject({ message: error });
             console.log(error);
@@ -248,7 +258,7 @@ exports.setProfile = function(req) {
             update.address = req.body.address;
         if(req.body.password)
             update.password = await Argon2.hash(req.body.password);
-        User.findByIdAndUpdate(req.user.uuid, update, {new: true}).then(user => {
+        User.findByIdAndUpdate(req.user._id, update, {new: true}).then(user => {
             req.user = user;
             resolve({ user, message: "Du hast dein Profil erfolgreich aktualisiert" });
         }).catch(error => {
