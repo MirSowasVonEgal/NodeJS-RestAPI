@@ -12,13 +12,15 @@ exports.successfully = function(response, req, res) {
                     language = req.user.settings.language;
                 }
             }
-        }
+        }/*
         translate(response.message, {to: language}).then(translated => {
             response.message = translated.text + ".";
             res.json({ error: false, response});
         }).catch(err => {
             res.json({ error: false, response});
-        });
+        });*/
+        response.message += ".";
+        res.json({ error: false, response});
     } else {
         res.json({ error: false, response});
     }
@@ -37,10 +39,12 @@ exports.failed = function(response, req, res) {
             }
         }
     }
-    translate(response.message, {to: language}).then(translated => {
+    /*translate(response.message, {to: language}).then(translated => {
         response.message = translated.text + "!";
         res.json({ error: true, response});
     }).catch(err => {
         res.json({ error: true, response});
-    });
+    });*/
+    response.message += "!";
+    res.json({ error: true, response});
 }

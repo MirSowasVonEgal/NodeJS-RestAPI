@@ -18,6 +18,7 @@ const schema = new Schema ({
         provider: { type: String, required: false, default: "E-Mail" },
         balance: { type: Schema.Types.Double, default: 0 },
         address: { type: Object, required: false, default: {} },
+        notes: { type: String, required: false, default: '' },
         settings: { type: Object, required: false, default: { language: "de" } },
 });
 

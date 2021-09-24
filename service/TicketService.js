@@ -4,7 +4,7 @@ var { TelegramBot } = require('../core');
 
 exports.createTicket = function(req) {
     return new Promise(function(resolve, reject) {
-      if(!req.body.title) return reject({ message: "Du musst einen Title angeben"});
+      if(!req.body.title) return reject({ message: "Du musst einen Titel angeben"});
       if(!req.body.category) return reject({ message: "Du musst eine Kategorie angeben"});
       if(!req.body.question) return reject({ message: "Du musst eine Frage eingeben"});
       if(!req.body.priority) return reject({ message: "Du musst eine Priorität angeben"});
@@ -18,10 +18,10 @@ exports.createTicket = function(req) {
               case 1:
                   priority = "Niedrig"
                   break;
-               case 1:
-                  priority = "Mittel"
+              case 2:
+                  priority = "Normal"
                   break;
-              case 1:
+              case 3:
                   priority = "Hoch"
                   break;
 
@@ -58,6 +58,7 @@ exports.updateTicket = function(req) {
         if(req.body.message) {
           update = { $addToSet: { messages: { date: new Date().getTime(), userid: req.user._id, username: req.user.username, role: req.user.role, message: req.body.message  }  } };
           update.status = "Offen";
+          update.closed = false;
           update.lastupdate = new Date().getTime();
         }
         Ticket.findByIdAndUpdate(req.params.id, update, {new: true})
@@ -70,10 +71,10 @@ exports.updateTicket = function(req) {
                     case 1:
                         priority = "Niedrig"
                         break;
-                     case 1:
-                        priority = "Mittel"
+                    case 2:
+                        priority = "Normal"
                         break;
-                    case 1:
+                    case 3:
                         priority = "Hoch"
                         break;
 
@@ -90,6 +91,34 @@ exports.updateTicket = function(req) {
                     "Status: <B>" + ticket.status + "</B>", { parse_mode: 'html'}).then(msg => {
                         Ticket.findByIdAndUpdate(req.params.id, { telegramid: msg.message_id }).then();
                 });
+            } else {
+              var priority;
+                switch(ticket.priority) {
+                    case 1:
+                        priority = "Niedrig"
+                        break;
+                    case 2:
+                        priority = "Normal"
+                        break;
+                    case 3:
+                        priority = "Hoch"
+                        break;
+
+                }
+                if(ticket.telegramid == 0) return; 
+                TelegramBot.editMessageText(
+                  "<B>Support-Ticket</B> \n" +
+                  "\n" +
+                  "Titel: <B>" + ticket.title + "</B>\n" +
+                  "Kategorie: <B>" + ticket.category + "</B>\n" +
+                  "Priorität <B>" + priority + "</B>\n" +
+                  "\n" + 
+                  'Link: <B><a href="' + process.env.TELEGRAM_TICKETURL.replace('%id%', ticket._id) + '">Öffnen</a></B>\n' +
+                  "Status: <B>" + ticket.status + "</B>", {
+                  chat_id: process.env.TELEGRAM_CHATID,
+                  message_id: ticket.telegramid,
+                  parse_mode: 'html'
+              });
             }
           } else {
             reject();
@@ -110,4 +139,15 @@ exports.getTickets = function(req) {
         resolve({tickets});
       });
     });
+}
+
+
+exports.getTicket = function(req) {
+  return new Promise(function(resolve, reject) {
+    Ticket.findById(req.params.id)
+    .then(ticket => {
+      if(!ticket) return reject();
+      resolve({ticket});
+    });
+  });
 }

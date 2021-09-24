@@ -256,6 +256,8 @@ exports.setProfile = function(req) {
             update.settings = req.body.settings;
         if(req.body.address)
             update.address = req.body.address;
+        if(req.body.notes)
+            update.notes = req.body.notes;
         if(req.body.password)
             update.password = await Argon2.hash(req.body.password);
         User.findByIdAndUpdate(req.user._id, update, {new: true}).then(user => {

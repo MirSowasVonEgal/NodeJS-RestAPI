@@ -33,5 +33,15 @@ router.get('', Auth, async function(req, res) {
     });
 });
 
+router.get('/:id', Auth, async function(req, res) {
+    TicketService.getTicket(req)
+    .then(function (response) {
+        Response.successfully(response, req, res);
+    })
+    .catch(function (response) {
+        Response.failed(response, req, res);
+    });
+});
+
 
 module.exports = router;
