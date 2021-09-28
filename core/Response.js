@@ -30,7 +30,7 @@ exports.failed = function(response, req, res) {
     if(res.statusCode == -1) res.status(400);
 
     if(!response) var response = {};
-    if(!response.message) response.message = "An unknown error occurred";
+    if(!response.message) response.message = "Ein unbekannter Fehler ist aufgetreten";
     var language = "de"
     if(req.user) {
         if(req.user.settings) {

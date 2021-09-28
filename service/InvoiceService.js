@@ -18,16 +18,31 @@ exports.showInvoice = function(req, res) {
             var amount = parseFloat(JSON.stringify(result.amount).replace(/"/g, ''));
             var timestamp = Number(JSON.stringify(result.created).replace(/"/g, ''));
 
-            var Invoice = Default_INVOICE
-                .replace(/%username%/g, result.user.username)
-                .replace(/%email%/g, result.user.email)
-                .replace(/%uuid%/g, result._id)
-                .replace(/%product%/g, result.product)
-                .replace(/%paymethod%/g, result.method)
-                .replace(/%date%/g, new Date(timestamp).toLocaleString('de-DE'))
-                .replace(/%amount%/g, amount.toFixed(2))
-                .replace(/%vat%/g, (amount - (amount / 1.19)).toFixed(2))
-                .replace(/%netprice%/g, (amount / 1.19).toFixed(2))
+            var Invoice = null;
+            if(result.method != 'Guthaben') {
+                Invoice = Default_INVOICE
+                    .replace(/%username%/g, result.user.username)
+                    .replace(/%email%/g, result.user.email)
+                    .replace(/%uuid%/g, result._id)
+                    .replace(/%product%/g, result.product)
+                    .replace(/%paymethod%/g, result.method)
+                    .replace(/%date%/g, new Date(timestamp).toLocaleString('de-DE'))
+                    .replace(/%amount%/g, amount.toFixed(2))
+                    .replace(/%vat%/g, (amount - (amount / 1.19)).toFixed(2))
+                    .replace(/%netprice%/g, (amount / 1.19).toFixed(2))
+            } else {
+                console.log("1")
+                Invoice = Default_INVOICE
+                    .replace(/%username%/g, result.user.username)
+                    .replace(/%email%/g, result.user.email)
+                    .replace(/%uuid%/g, result._id)
+                    .replace(/%product%/g, result.product)
+                    .replace(/%paymethod%/g, result.method)
+                    .replace(/%date%/g, new Date(timestamp).toLocaleString('de-DE'))
+                    .replace(/%amount%/g, amount.toFixed(2))
+                    .replace(/%vat%/g, "-")
+                    .replace(/%netprice%/g, "-")
+            }
 
             
             PDF.create(Invoice).toStream((err, pdfStream) => {

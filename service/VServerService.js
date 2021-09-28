@@ -3,6 +3,7 @@ var VServer = require('../model/VServer');
 var Network = require('../model/Network');
 var Product = require('../model/Product');
 var User = require('../model/User');
+var Invoice = require('../model/Invoice');
 var AdminNetworkService = require('./admin/AdminNetworkService');
 var SSHService = require('./SSHService');
 var { Proxmox } = require('../core');
@@ -13,22 +14,24 @@ exports.orderVServer = function(req) {
       if(!req.body.duration) return reject({ message: "Du musst eine Dauer angeben"});
       Product.findById(req.params.id).then(product => {
         var duration = parseInt(JSON.stringify(req.body.duration).replace(/"/g, ''));
-        var ipv4s = 1;
-        if(req.body.ipv4s)
-            ipv4s = parseInt(JSON.stringify(req.body.ipv4s).replace(/"/g, ''));
+        var ipv4 = 1;
+        if(req.body.ipv4)
+            ipv4 = parseInt(JSON.stringify(req.body.ipv4).replace(/"/g, ''));
         var ipv6 = true;
         if(req.body.ipv6)
-            ipv6 = parseInt(JSON.stringify(req.body.ipv4s).replace(/"/g, ''));
-        var price = ((((product.price + ipv4s- 1) / 30)));
+            ipv6 = parseInt(JSON.stringify(req.body.ipv4).replace(/"/g, ''));
+        var price = ((((Number(product.price) + ipv4 - 1) / 30)));
         req.body.password = generatePassword(16);
         if(req.user.balance >= (price * duration).toFixed(2)) {
             User.findByIdAndUpdate(req.user._id, { balance: (req.user.balance - (duration * price)).toFixed(2) }).then();
+            new Invoice({ product: 'VServer', user: req.user, userid: req.user._id, serviceid: product._id, method: 'Guthaben', amount: (duration * price).toFixed(2), status: 'Bezahlt', data: JSON.stringify(product) }).save()
+            .then();
             Proxmox.getNodes().then(nodes => {
                 var node = nodes[0].node;
                 Proxmox.getNextVMID().then(nextid => {
                     var uuid = generateUUID();
                     AdminNetworkService.getIPAddresses(req, ipv6, "IPv6", nextid, uuid, "VServer").then(ipv6_network => {
-                        AdminNetworkService.getIPAddresses(req, ipv4s, "IPv4", nextid, uuid, "VServer").then(networks => {
+                        AdminNetworkService.getIPAddresses(req, ipv4, "IPv4", nextid, uuid, "VServer").then(networks => {
                             params = {
                                 vmid: nextid,
                                 ostemplate: "local:vztmpl/" + req.body.os,
@@ -51,7 +54,6 @@ exports.orderVServer = function(req) {
                                 if(ipv6_network.gateway != undefined)
                                     params['net' + i] = 'name=eth' + i + ',bridge=vmbr0,firewall=1,ip6=' + ipv6_network.ip + '/' + ipv6_network.subnet + ',gw=' + ipv6_network.gateway + ',type=veth'
                             }
-                            console.log(params)
                             Proxmox.createLxcContainer(node, params).then(lxc => {
                                 if(lxc.status == 200) {
                                     new VServer({ _id: uuid, serverid: nextid, userid: req.user._id, password: req.body.password, os: req.body.os, memory: Number(product.data.memory), 
@@ -59,7 +61,7 @@ exports.orderVServer = function(req) {
                                     .then(vserver => {
                                         if(vserver) {
                                             vserver.password = undefined;
-                                            resolve({vserver, message: "Du hast dir erfolgreich einen VServer gemietet."})
+                                            resolve({vserver, message: "Du hast dir erfolgreich einen VServer gemietet"})
                                             Proxmox.putAccessAcl({ path: "/vms/"+ vserver.serverid, roles: "VNC", users: req.user._id + "@pve" });
                                             setTimeout(function(){
                                                 SSHService.updateAndAllowRoot(vserver.serverid);

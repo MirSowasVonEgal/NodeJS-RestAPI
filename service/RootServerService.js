@@ -54,7 +54,7 @@ exports.orderRootServer = function(req) {
                                         .then(rootserver => {
                                             if(rootserver) {
                                                 rootserver.password = undefined;
-                                                resolve({rootserver, networks, ipv6_network, message: "Der Server wurde erstellt"})
+                                                resolve({rootserver, networks, ipv6_network, message: "Du hast dir erfolgreich einen RootServer gemietet"})
                                                 Proxmox.putAccessAcl({ path: "/vms/"+ rootserver.serverid, roles: "VNC", users: req.user._id + "@pve" });
                                                 setTimeout(function(){
                                                     Proxmox.setQemuVmConfig(rootserver.node, rootserver.serverid, params);
