@@ -62,10 +62,10 @@ exports.orderVServer = function(req) {
                                         if(vserver) {
                                             vserver.password = undefined;
                                             resolve({vserver, message: "Du hast dir erfolgreich einen VServer gemietet"})
-                                            Proxmox.putAccessAcl({ path: "/vms/"+ vserver.serverid, roles: "VNC", users: req.user._id + "@pve" });
                                             setTimeout(function(){
                                                 SSHService.updateAndAllowRoot(vserver.serverid);
-                                           }, 1000 * 30);
+                                            }, 1000 * 60);
+                                            Proxmox.putAccessAcl({ path: "/vms/"+ vserver.serverid, roles: "VNC", users: req.user._id + "@pve" });
                                         } else {
                                             reject();
                                         }
@@ -154,7 +154,7 @@ exports.getVServer = function(req) {
                 } else {
                     vserver.status = 'Offline' 
                 }
-                resolve({vserver, status});
+                resolve({vserver, networks, status});
             }
         })
       }).catch(error => {
@@ -247,71 +247,72 @@ exports.getVServers = function(req) {
                 nodes.forEach(node => {
                     i++;
                     Proxmox.listLxcContainers(node.node).then(lxc_status_ => {
-                        Proxmox.getNodeTasks(node.node).then(node_tasks_ => {
-                            lxc_status = lxc_status.concat(lxc_status_);
-                            node_tasks = node_tasks.concat(node_tasks_);
-                            if(nodes.length == i) {
-                                resolve();
-                            }  
-                        });
+                        lxc_status = lxc_status.concat(lxc_status_);
+                        if(nodes.length == i) {
+                            resolve();
+                        }  
                     });  
                 });
             });
         }); 
         var finalvservers = [];
-        VServer.find({ userid: req.user._id }).then(vservers => {
-            vservers.forEach(vserver => {
-                var task = node_tasks.find(i =>{
-                    if(i == null) return;
-                    if(i.id == vserver.serverid) {
-                        if(i.status != 'OK' && i.type != 'vncproxy') {
-                            if(!(i.endtime)) {
-                                return i;
+        Proxmox.getClusterTasks().then(node_tasks_ => {
+            node_tasks = node_tasks = node_tasks_;
+            VServer.find({ userid: req.user._id }).then(vservers => {
+                vservers.forEach(vserver => {
+                    var task = node_tasks.find(i =>{
+                        if(i == null) return;
+                        if(i.id == vserver.serverid) {
+                            if(i.status != 'OK' && i.type != 'vncproxy') {
+                                if(!(i.endtime)) {
+                                    return i;
+                                }
                             }
                         }
-                    }
-                });
-                var status = lxc_status.find(i =>{
-                    if(i == null) return;
-                    if(i.vmid == vserver.serverid) {
-                        if(i.status != 'OK' && i.type != 'vncproxy') {
-                            if(!(i.endtime)) {
-                                return i;
+                    });
+                    var status = lxc_status.find(i =>{
+                        if(i == null) return;
+                        if(i.vmid == vserver.serverid) {
+                            if(i.status != 'OK' && i.type != 'vncproxy') {
+                                if(!(i.endtime)) {
+                                    return i;
+                                }
                             }
                         }
+                    });
+                    
+                    if(status.status == 'running') {
+                        vserver.status = 'Online' 
+                    } else {
+                        vserver.status = 'Offline' 
                     }
+                    if(task != undefined) {
+                        switch(task.type) {
+                            case 'vzcreate':
+                                vserver.status = 'Installation';
+                                break;
+                            case 'vzstart':
+                                vserver.status = 'Startet';
+                                break;
+                            case 'vzstop':
+                                vserver.status = 'Gestoppt';
+                                break;
+                            case 'vzshutdown':
+                                vserver.status = 'Heruntergefahren';
+                                break
+                            case 'vzreboot':
+                                vserver.status = 'Neustart';
+                                break
+                            default:
+                                vserver.status = 'Unbekannt'
+                                break;
+                        }
+                    }
+                    vserver.password = undefined;
+                    finalvservers.push({vserver, status})
                 });
-                if(task != undefined) {
-                    switch(task.type) {
-                        case 'vzcreate':
-                            vserver.status = 'Installation';
-                            break;
-                        case 'vzstart':
-                            vserver.status = 'Startet';
-                            break;
-                        case 'vzstop':
-                            vserver.status = 'Gestoppt';
-                            break;
-                        case 'vzshutdown':
-                            vserver.status = 'Heruntergefahren';
-                            break
-                        case 'vzreboot':
-                            vserver.status = 'Neustart';
-                            break
-                        default:
-                            vserver.status = 'Unbekannt'
-                            break;
-                    }
-                }
-                if(status.status == 'running') {
-                    vserver.status = 'Online' 
-                } else {
-                    vserver.status = 'Offline' 
-                }
-                vserver.password = undefined;
-                finalvservers.push({vserver, status})
+                resolve({vservers: finalvservers})
             });
-            resolve({vservers: finalvservers})
         });
     });
 }

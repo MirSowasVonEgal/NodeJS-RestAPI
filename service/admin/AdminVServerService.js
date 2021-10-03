@@ -2,6 +2,7 @@ require("dotenv").config();
 var VServer = require('../../model/VServer');
 var Network = require('../../model/Network');
 var AdminNetworkService = require('./AdminNetworkService');
+var SSHService = require('../SSHService');
 var { Proxmox } = require('../../core');
 
 exports.createVServer = function(req) {

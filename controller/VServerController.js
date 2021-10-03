@@ -93,15 +93,4 @@ router.post('/:id/shutdown', Auth, async function(req, res) {
     });
 });
 
-
-router.post('/:id/shutdown', Auth, async function(req, res) {
-    VServerService.shutdownVServer(req)
-    .then(function (response) {
-        Response.successfully(response, req, res);
-    })
-    .catch(function (response) {
-        Response.failed(response, req, res);
-    });
-});
-
 module.exports = router;
