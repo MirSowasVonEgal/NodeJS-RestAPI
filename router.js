@@ -10,6 +10,7 @@ var VServerController = require('./controller/VServerController');
 var ProductController = require('./controller/ProductController');
 var OSController = require('./controller/OSController');
 var RootServerController = require('./controller/RootServerController');
+var NewsController = require('./controller/NewsController');
 
 // Admin Controllers
 var AdminTicketController = require('./controller/admin/AdminTicketController');
@@ -20,6 +21,7 @@ var AdminNetworkController = require('./controller/admin/AdminNetworkController'
 var AdminProductController = require('./controller/admin/AdminProductController');
 var AdminOSController = require('./controller/admin/AdminOSController');
 var AdminRootServerController = require('./controller/admin/AdminRootServerController');
+var AdminNewsController = require('./controller/admin/AdminNewsController');
 
 // Use Controllers
 app.use('/auth', AuthController);
@@ -30,6 +32,7 @@ app.use('/vserver', VServerController);
 app.use('/product', ProductController);
 app.use('/os', OSController);
 app.use('/rootserver', RootServerController);
+app.use('/news', NewsController);
 
 // Use Admin Controllers
 app.use('/admin/users', AdminUsersController);
@@ -40,5 +43,6 @@ app.use('/admin/network', AdminNetworkController);
 app.use('/admin/product', AdminProductController);
 app.use('/admin/os', AdminOSController);
 app.use('/admin/rootserver', AdminRootServerController);
+app.use('/admin/news', AdminNewsController);
 
 module.exports = app;

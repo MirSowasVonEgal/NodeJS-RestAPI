@@ -84,6 +84,29 @@ function hourSchedular() {
             }
           });
         });
+        VServer.find().then(vservers => {
+          vservers.forEach(vserver => {
+            if((vserver.traffic / 1024 / 1024 / 1024) > (vserver.product.data.traffic * 1024)) {
+              params = {};
+              Network.find({ serveruuid: vserver._id }).then(networks => {
+                var i = 0;
+                networks.forEach(network => {
+                    if(network.type == 'IPv4') {
+                      params['net' + i] = 'name=eth' + i + ',bridge=vmbr0,firewall=1,ip=' + network.ip + '/' + network.subnet + ',gw=' + network.gateway + ',type=veth,rate=3'
+                    } else {
+                        if(network.gateway == undefined || network.gateway == null) {
+                          params['net' + i] = 'name=eth' + i + ',bridge=vmbr0,firewall=1,ip6=' + network.ip + '/' + network.subnet + ',type=veth,rate=3'
+                        } else {
+                          params['net' + i] = 'name=eth' + i + ',bridge=vmbr0,firewall=1,ip6=' + network.ip + '/' + network.subnet + ',gw=' + network.gateway + ',type=veth,rate=3'
+                        }
+                    }
+                    i++;
+                });
+                Proxmox.setLxcConfig(vserver.node, vserver.serverid, params).then();
+              });
+            }
+          });
+        });
         RootServer.find({ paidup: { $lte: new Date().getTime() } }).then(rootservers => {
           rootserver_filtered = rootservers.filter(i => i.paidup !== -1)
           rootserver_filtered.forEach(rootserver => {

@@ -44,6 +44,7 @@ exports.VServerService = require('../service/VServerService');
 exports.ProductService = require('../service/ProductService');
 exports.OSService = require('../service/OSService');
 exports.RootServerService = require('../service/RootServerService');
+exports.NewsService = require('../service/NewsService');
 
 // Admin Service
 exports.AdminUsersService = require('../service/admin/AdminUsersService');
@@ -54,6 +55,7 @@ exports.AdminNetworkService = require('../service/admin/AdminNetworkService');
 exports.AdminProductService = require('../service/admin/AdminProductService');
 exports.AdminOSService = require('../service/admin/AdminOSService');
 exports.AdminRootServerService = require('../service/admin/AdminRootServerService');
+exports.AdminNewsService = require('../service/admin/AdminNewsService');
 
 
 // Payment Services
@@ -61,4 +63,3 @@ exports.PayPalService = require('../service/payment/PayPalService');
 
 exports.User = require('../model/User');
 exports.Response = require('./Response');
-

@@ -24,7 +24,7 @@ exports.orderVServer = function(req) {
         req.body.password = generatePassword(16);
         if(req.user.balance >= (price * duration).toFixed(2)) {
             User.findByIdAndUpdate(req.user._id, { balance: (req.user.balance - (duration * price)).toFixed(2) }).then();
-            new Invoice({ product: 'VServer', user: req.user, userid: req.user._id, serviceid: product._id, method: 'Guthaben', amount: (duration * price).toFixed(2), status: 'Bezahlt', data: JSON.stringify(product) }).save()
+            new Invoice({ product: 'Kauf VServer  (' + req.body.duration + ')', user: req.user, userid: req.user._id, serviceid: product._id, method: 'Guthaben', amount: (duration * price).toFixed(2), status: 'Bezahlt', data: JSON.stringify(product) }).save()
             .then();
             Proxmox.getNodes().then(nodes => {
                 var node = nodes[0].node;
@@ -56,7 +56,7 @@ exports.orderVServer = function(req) {
                             }
                             Proxmox.createLxcContainer(node, params).then(lxc => {
                                 if(lxc.status == 200) {
-                                    new VServer({ _id: uuid, serverid: nextid, userid: req.user._id, password: req.body.password, os: req.body.os, memory: Number(product.data.memory), 
+                                    new VServer({ _id: uuid, product, serverid: nextid, userid: req.user._id, password: req.body.password, os: req.body.os, memory: Number(product.data.memory), 
                                         cores: Number(product.data.cores), disk: Number(product.data.disk), node: node, price: (price * 30), paidup: new Date().getTime() + (86400000 * duration), status: "Installation", upid: lxc.data.data }).save()
                                     .then(vserver => {
                                         if(vserver) {
@@ -92,9 +92,14 @@ exports.extendVServer = function(req) {
         VServer.findById(req.params.id).then(vserver => {
             var price = ((vserver.price / 30) * req.body.duration).toFixed(2);
             if(req.user.balance >= price) {
-                User.findByIdAndUpdate(req.user._id, { balance: (req.user.balance - price) }).then();
-                VServer.findByIdAndUpdate(req.params.id, { $inc: { paidup: (86400000 * req.body.duration) } }).then();
-                resolve({ message: "Der Server wurde erfolgreich verlängert" });
+                User.findByIdAndUpdate(req.user._id, { balance: (req.user.balance - price).toFixed(2) }).then();
+                if(vserver.blocked) {
+                    VServer.findByIdAndUpdate(req.params.id, { paidup: (new Date().getTime() + (86400000 * req.body.duration)), blocked: false }).then();
+                } else {
+                    VServer.findByIdAndUpdate(req.params.id, { $inc: { paidup: (86400000 * req.body.duration) } }).then();
+                }
+                new Invoice({ product: 'Verlängerung VServer (' + req.body.duration + ')', user: req.user, userid: req.user._id, serviceid: vserver.product._id, method: 'Guthaben', amount: price, status: 'Bezahlt', data: JSON.stringify(vserver.product) }).save().then();
+                resolve({ message: "Der Server wurde erfolgreich Verlängert" });
             } else {
                 return reject({ message: "Du hast nicht genung Guthaben" });
             }
@@ -108,6 +113,8 @@ exports.getVServer = function(req) {
         if(vserver == null) return reject();
         if(vserver.userid != req.user._id) return reject();
         Network.find({ serveruuid: req.params.id }).then(networks => {
+        Proxmox.getBackups(vserver.node, 'local').then(backups => {
+        backups = backups.filter(i => i.vmid == vserver.serverid)
         Proxmox.getLxcContainerStatus(vserver.node, vserver.serverid).then(status => {
             if(vserver.upid) {
                 Proxmox.getTaskStatus(vserver.node, vserver.upid).then(task => {
@@ -145,7 +152,7 @@ exports.getVServer = function(req) {
                                 break;
                         }
                     }
-                    resolve({vserver, networks, status});
+                    resolve({vserver, backups, networks, status});
                 
                 });
             } else {
@@ -154,12 +161,15 @@ exports.getVServer = function(req) {
                 } else {
                     vserver.status = 'Offline' 
                 }
-                resolve({vserver, networks, status});
+                resolve({vserver, backups, networks, status});
             }
         })
       }).catch(error => {
         reject(error)
       })
+    }).catch(error => {
+      reject(error)
+    })
     })
     });
 }
@@ -170,6 +180,78 @@ exports.getVNC = function(req) {
         if(vserver.userid != req.user._id) return reject();
         Proxmox.createAccessTicket({ password: Proxmox.ticket, username: req.user._id + "@pve" }).then(lxc => {
             resolve({ url: "https://" + process.env.PROXMOX_HOST + ":8006/?console=lxc&novnc=1&vmid=" + vserver.serverid + "&node=" + vserver.node + "&cmd=", CSRFPreventionToken: lxc.data.data.CSRFPreventionToken, cookie: "PVEAuthCookie=" + lxc.data.data.ticket });
+        });
+      }).catch(error => {
+        reject(error)
+      })
+    });
+}
+
+exports.createBackup = function(req) {
+    return new Promise(function(resolve, reject) {
+      VServer.findById(req.params.id).then(vserver => {
+        if(vserver.userid != req.user._id) return reject();
+            if(vserver.backupcount < vserver.maxbackups) {
+                Proxmox.getBackups(vserver.node, 'local').then(backups => {
+                    backups = backups.filter(i => i.vmid == vserver.serverid);
+                    Proxmox.createBackup(vserver.node, { vmid: vserver.serverid, compress: 'zstd', remove: 0, mode: 'snapshot' }).then(backup => {
+                        if(backup == 500) return reject();
+                        resolve({ message: "Dein Backup wird erstellt" });
+                        VServer.findByIdAndUpdate(vserver._id, { backupcount: (vserver.backupcount + 1) }).then();
+                    }).catch(error => {
+                        reject(error)
+                    })
+                }).catch(error => {
+                    reject(error)
+                })
+            } else {
+                return reject({ message: "Du kannst nur " + vserver.maxbackups + " Backups erstellen"});
+            }
+        }).catch(error => {
+            reject(error)
+        })
+    });
+}
+
+exports.getBackups = function(req) {
+    return new Promise(function(resolve, reject) {
+      VServer.findById(req.params.id).then(vserver => {
+        if(vserver.userid != req.user._id) return reject();
+        Proxmox.getBackups(vserver.node, 'local').then(backups => {
+            if(backups == 500) return reject();
+            resolve({ backups: backups.filter(i => i.vmid == vserver.serverid) });
+        });
+      }).catch(error => {
+        reject(error)
+      })
+    });
+}
+
+exports.deleteBackup = function(req) {
+    return new Promise(function(resolve, reject) {
+      VServer.findById(req.params.id).then(vserver => {
+        if(vserver.userid != req.user._id) return reject();
+        Proxmox.deleteBackup(vserver.node, 'local', req.params.volid1 + "/" + req.params.volid2).then(backup => {
+            if(backup == 500) return reject();
+            resolve({ message: "Dein Backup wurde erfolgreich gelöscht" });
+            VServer.findByIdAndUpdate(vserver._id, { backupcount: (vserver.backupcount - 1) }).then();
+        }).catch(error => {
+            reject(error)
+          })
+      }).catch(error => {
+        reject(error)
+      })
+    });
+}
+
+exports.restoreBackup = function(req) {
+    return new Promise(function(resolve, reject) {
+      VServer.findById(req.params.id).then(vserver => {
+        if(vserver.userid != req.user._id) return reject();
+        Proxmox.restoreBackup(vserver.node, 
+            { ostemplate: (req.params.volid1 + "/" + req.params.volid2), storage: 'local-lvm', force: 1, vmid: vserver.serverid, restore: 1 }).then(backups => {
+            if(backups == 500) return reject({ message: "Um ein Backup wiederherzustellen muss dein Server aus sein" });
+            resolve({ message: "Dein Backup wird wiederhergestellt.." });
         });
       }).catch(error => {
         reject(error)
@@ -194,17 +276,29 @@ exports.startVServer = function(req) {
 
 exports.stopVServer = function(req) {
     return new Promise(function(resolve, reject) {
-      VServer.findById(req.params.id).then(vserver => {
-        if(vserver.userid != req.user._id) return reject();
-        Proxmox.stopLxcContainer(vserver.node, vserver.serverid).then(lxc => {
-            if(lxc == 500) return reject({ message: "Der VServer ist bereits gestoppt" });
-            resolve({ message: "Der VServer wird gestoppt" });
-            VServer.findByIdAndUpdate(vserver._id, { upid: lxc.data.data }).then();
-        });
-      }).catch(error => {
-        reject(error)
-      })
-    });
+        VServer.findById(req.params.id).then(vserver => {
+            if(vserver.userid != req.user._id) return reject();
+            Proxmox.getLxcContainerStatus(vserver.node, vserver.serverid).then(status => {
+                VServer.findByIdAndUpdate(vserver._id, { $inc: { traffic: (status.netin + status.netout) } }).then(() => {
+                    Proxmox.stopLxcContainer(vserver.node, vserver.serverid).then(lxc => {
+                        if(lxc == 500) return reject({ message: "Der VServer ist bereits gestoppt" });
+                        resolve({ message: "Der VServer wird gestoppt" });
+                        VServer.findByIdAndUpdate(vserver._id, { upid: lxc.data.data }).then();
+                    }).catch(error => {
+                        reject(error)
+                    })
+                }).catch(error => {
+                    reject(error)
+                })
+            }).catch(error => {
+                reject(error)
+            })
+        }).catch(error => {
+            reject(error)
+        })
+    }).catch(error => {
+      reject(error)
+    })
 }
 
 exports.shutdownVServer = function(req) {
@@ -231,6 +325,20 @@ exports.rebootVServer = function(req) {
             resolve({ message: "Der VServer wird neugestartet" });
             VServer.findByIdAndUpdate(vserver._id, { upid: lxc.data.data }).then();
         });
+      }).catch(error => {
+        reject(error)
+      })
+    });
+}
+
+exports.resetPassword = function(req) {
+    return new Promise(function(resolve, reject) {
+      VServer.findById(req.params.id).then(vserver => {
+        if(vserver.userid != req.user._id) return reject();
+            resolve({ message: "Dein Passwort wurde zurückgesetzt" });
+            var password = generatePassword(16);
+            VServer.findByIdAndUpdate(vserver._id, { password }).then();
+            SSHService.resetPassword(vserver.serverid, password);
       }).catch(error => {
         reject(error)
       })

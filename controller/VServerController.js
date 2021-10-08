@@ -93,4 +93,55 @@ router.post('/:id/shutdown', Auth, async function(req, res) {
     });
 });
 
+router.post('/:id/backup', Auth, async function(req, res) {
+    VServerService.createBackup(req)
+    .then(function (response) {
+        Response.successfully(response, req, res);
+    })
+    .catch(function (response) {
+        Response.failed(response, req, res);
+    });
+});
+
+router.get('/:id/backup', Auth, async function(req, res) {
+    VServerService.getBackups(req)
+    .then(function (response) {
+        Response.successfully(response, req, res);
+    })
+    .catch(function (response) {
+        Response.failed(response, req, res);
+    });
+});
+
+router.put('/:id/backup/:volid1/:volid2', Auth, async function(req, res) {
+    VServerService.restoreBackup(req)
+    .then(function (response) {
+        Response.successfully(response, req, res);
+    })
+    .catch(function (response) {
+        Response.failed(response, req, res);
+    });
+});
+
+
+router.delete('/:id/backup/:volid1/:volid2', Auth, async function(req, res) {
+    VServerService.deleteBackup(req)
+    .then(function (response) {
+        Response.successfully(response, req, res);
+    })
+    .catch(function (response) {
+        Response.failed(response, req, res);
+    });
+});
+
+router.put('/:id/resetpassword', Auth, async function(req, res) {
+    VServerService.resetPassword(req)
+    .then(function (response) {
+        Response.successfully(response, req, res);
+    })
+    .catch(function (response) {
+        Response.failed(response, req, res);
+    });
+});
+
 module.exports = router;
